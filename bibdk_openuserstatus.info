@@ -1,0 +1,5 @@
+name = Bibliotek.dk - Open Userstatus
+description = DESCRIPTION...
+package = Bibliotek.dk
+core = 7.x
+version = 7.x-0.1-dev
