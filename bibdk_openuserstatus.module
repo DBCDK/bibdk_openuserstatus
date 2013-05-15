@@ -1,0 +1,238 @@
+<?php
+
+/**
+ * Impelements user_profile_tabs (
+ * @see ding_user.module)
+ * */
+function bibdk_openuserstatus_user_profile2_tabs() {
+  $ret = new stdClass();
+  $ret->label = t('my_loanerstatus', array(), array('context' => 'bibdk_openuserstatus'));
+  $ret->form = 'bibdk_openuserstatus_form';
+  $ret->type = 'bibdk_openuserstatus';
+  return $ret;
+}
+
+/**
+ * Implements hook_menu().
+ * @return array
+ */
+function bibdk_openuserstatus_menu() {
+  $items = array();
+  $items['user/loanerstatus'] = array(
+    'title' => t('Loanerstatus'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_openuserstatus_form'),
+    'access arguments' => array('access content'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ * @return array
+ */
+function bibdk_openuserstatus_theme() {
+  return array(
+    'bibdk_openuserstatus' => array(
+      'variables' => array(
+        'loans' => '',
+        'loans_count' => '',
+        'ready_for_pickup' => '',
+        'reservations' => '',
+        'fiscal_account' => '',
+      ),
+      'template' => 'theme/bibdk_openuserstatus',
+    ),
+  );
+}
+
+/**
+ * Implement hook_ctools_plugin_api().
+ */
+function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
+  if ($module == 'page_manager' && $api == 'pages_default') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * @param $form
+ * @internal param $form_state
+ * @return array
+ */
+function bibdk_openuserstatus_form($form) {
+  $res = bibdk_openuserstatus_request();
+  if ($res->getError()) {
+    //TODO handle error
+  }
+
+  $response = $res->getResponse();
+
+  $form['tables'] = bibdk_openuserstatus_get_tables($response);
+  return $form;
+}
+
+function bibdk_openuserstatus_get_tables($response) {
+  return array(
+    '#markup' => theme('bibdk_openuserstatus', array(
+      'loans' => bibdk_openuserstatus_get_loans($response),
+      'loans_count' => bibdk_openuserstatus_get_loans_count($response),
+      'ready_for_pickup' => bibdk_openuserstatus_get_ready_for_pickup($response),
+      'reservations' => bibdk_openuserstatus_get_reservations($response),
+      'fiscal_account' => bibdk_openuserstatus_get_fiscal_account($response),
+    )),
+  );
+}
+
+/**
+ * @param $res
+ * @return array $data
+ */
+function bibdk_openuserstatus_get_loans($res) {
+  $data['items'] = array();
+  if (!empty($res['loanedItems']['loan'])) {
+    //TODO create items
+    $data['items'] = bibdk_openuserstatus_get_loaned_items($res['loanedItems']['loan']);
+  }
+
+  $data['header'] = array(
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'returned' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'mark' => t('mark_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
+  $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+
+  return bibdk_openuserstatus_get_table($data);
+}
+
+/**
+ * @param $loan
+ */
+function bibdk_openuserstatus_get_loaned_items($loan) {
+  $items = array();
+  foreach ($loan as $material) {
+    $item = array();
+    $item['library'] = 'unknown';
+    $item['material'] = $material['author'] . ': ' . $material['title'];
+    $item['returned'] = $material['dateDue'];
+    $item['mark'] = 'checkbox';
+    $items[] = $item;
+  }
+  dpm($items);
+  return $items;
+}
+
+/**
+ * @param $response
+ */
+function bibdk_openuserstatus_get_loans_count($res) {
+  $count = '';
+  if (!empty($res['loanedItems']['loansCount'])) {
+    $count = '(' . $res['loanedItems']['loansCount'] . ')';
+  }
+  return $count;
+}
+
+/**
+ * @param $response
+ */
+function bibdk_openuserstatus_get_reservations($res) {
+  $data['items'] = array();
+  if (!empty($res['orderedItems']['loan'])) {
+    //TODO create items
+  }
+
+  $data['header'] = array(
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'returned' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'mark' => t('mark_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
+  $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+
+  return bibdk_openuserstatus_get_table($data);
+}
+
+/**
+ * @param $res
+ * @return array
+ */
+function bibdk_openuserstatus_get_ready_for_pickup($res) {
+  $data['items'] = array();
+  if (!empty($res['orderedItems']['order'])) {
+    //TODO create items
+  }
+
+  $data['header'] = array(
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'pickup_date' => t('pickup_date_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'serial' => t('serial_num_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
+
+  $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+
+  return bibdk_openuserstatus_get_table($data);
+}
+
+/**
+ * @param $res
+ * @internal param $response
+ * @return string
+ */
+function bibdk_openuserstatus_get_fiscal_account($res) {
+  $string = '';
+  if (!empty($res['fiscalAccount']['totalAmount'])) {
+    $string = t('you_have_a_fiscal_account_of %amount %currency', array('%amount' => $res['fiscalAccount']['totalAmount'], '%currency' => $res['fiscalAccount']['totalAmountCurrency']), array('context' => 'bibdk_openuserstatus'));
+  }
+  else {
+    $string = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
+  }
+  return $string;
+}
+
+/**
+ * @param array $data
+ * @return array
+ */
+function bibdk_openuserstatus_get_table($data) {
+  #return theme('table', array('header' => $data['header'], 'rows' => $data['items']));
+  return array(
+    '#theme' => 'table',
+    '#header' => $data['header'],
+    '#rows' => $data['items'],
+    '#empty' => $data['msg'],
+    '#attributes' => array(
+      'class' => array(
+        'table',
+      ),
+    ),
+  );
+}
+
+/**
+ * do a request
+ * @return bool|string | UserStatusResponse
+ */
+function bibdk_openuserstatus_request() {
+  $params = bibdk_openuserstatus_get_params();
+  $client = new ting_client_class();
+  // this is the real request
+  $response = $client->do_userstatusrequest($params);
+  if ($response) {
+    $response = new UserStatusResponse($response);
+  }
+  return $response;
+}
+
+function bibdk_openuserstatus_get_params() {
+  $params = array();
+  $params['action'] = 'getUserStatusRequest';
+  $params['userId'] = '0413392648';
+  $params['userPincode'] = '1234';
+  $params['agencyId'] = 'DK-737600';
+  $params['outputType'] = 'json';
+  return $params;
+}

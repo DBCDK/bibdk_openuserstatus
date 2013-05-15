@@ -1,5 +1,7 @@
-name = Bibliotek.dk - Open Userstatus
+name = Bibliotek.dk - OpenUserstatus
 description = DESCRIPTION...
 package = Bibliotek.dk
 core = 7.x
 version = 7.x-0.1-dev
+
+files[] = lib/UserStatusResponse.php
