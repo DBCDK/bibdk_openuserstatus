@@ -66,7 +66,8 @@ function bibdk_openuserstatus_request() {
   $params = bibdk_openuserstatus_get_params();
   $client = new ting_client_class();
   // this is the real request
-  $response = $client->do_userstatusrequest($params);
+ // $response = $client->do_userstatusrequest($params);
+  $response = $client->do_request('openuserstatus',$params);
   if ($response) {
     $response = new UserStatusResponse($response);
   }
@@ -89,7 +90,8 @@ function bibdk_openuserstatus_get_params() {
  */
 function bibdk_openuserstatus_get_agencyname($agencyId) {
   $client = new ting_client_class();
-  $response = $client->do_agency(array('agencyId' => $agencyId, 'action' => 'findLibraryRequest'));
+ // $response = $client->do_agency(array('agencyId' => $agencyId, 'action' => 'findLibraryRequest'));
+   $response = $client->do_request('agency',array('agencyId' => $agencyId, 'action' => 'findLibraryRequest'));
   if(isset($response->findLibraryResponse->pickupAgency)){
     $agency = $response->findLibraryResponse->pickupAgency[0];
     return $agency->agencyName->{'$'};
