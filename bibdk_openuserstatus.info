@@ -4,4 +4,8 @@ package = Bibliotek.dk
 core = 7.x
 version = 7.x-0.1-dev
 
+dependencies[] = ting_openuserstatus
+dependencies[] = ting_agency
+
 files[] = lib/UserStatusResponse.php
+files[] = includes/bibdk_openuserstatus.form.inc
