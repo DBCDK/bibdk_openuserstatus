@@ -38,13 +38,16 @@ function bibdk_openuserstatus_theme() {
   return array(
     'bibdk_openuserstatus' => array(
       'variables' => array(
-        'loans' => '',
-        'loans_count' => '',
-        'ready_for_pickup' => '',
-        'reservations' => '',
-        'fiscal_account' => '',
+        'tables' => '',
       ),
       'template' => 'theme/bibdk_openuserstatus',
+    ),
+    'bibdk_openuserstatus_table' => array(
+      'variables' => array(
+        'count' => '',
+        'table' => '',
+      ),
+      'template' => 'theme/bibdk_openuserstatus_table'
     ),
   );
 }

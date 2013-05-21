@@ -20,11 +20,12 @@ function bibdk_openuserstatus_form($form) {
 function bibdk_openuserstatus_get_tables($response) {
   return array(
     '#markup' => theme('bibdk_openuserstatus', array(
-      'loans' => bibdk_openuserstatus_get_loans_table($response),
-      'loans_count' => bibdk_openuserstatus_get_loans_count_table($response),
-      'ready_for_pickup' => bibdk_openuserstatus_get_ready_for_pickup_table($response),
-      'reservations' => bibdk_openuserstatus_get_reservations_table($response),
-      'fiscal_account' => bibdk_openuserstatus_get_fiscal_account_table($response),
+      'tables' => array(
+        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_loans_table($response), 'count' => bibdk_openuserstatus_get_loans_count($response))),
+        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_ready_for_pickup_table($response))),
+        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_reservations_table($response))),
+        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_fiscal_account_table($response))),
+      ),
     )),
   );
 }
@@ -41,10 +42,9 @@ function bibdk_openuserstatus_get_loans_table($res) {
 
 
   $data['header'] = array(
-    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'returned' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'mark' => t('mark_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'returndate' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
@@ -59,10 +59,9 @@ function bibdk_openuserstatus_get_loaned_items($loan) {
   $items = array();
   foreach ($loan as $material) {
     $item = array();
-    $item['library'] = 'unknown';
     $item['material'] = $material['author'] . ': ' . $material['title'];
-    $item['returned'] = date('d.m.Y', strtotime($material['dateDue']));
-    $item['mark'] = 'checkbox';
+    $item['library'] = 'libraryname not provided';
+    $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
     $items[] = $item;
   }
   return $items;
@@ -72,7 +71,7 @@ function bibdk_openuserstatus_get_loaned_items($loan) {
  * @param $res
  * @return string
  */
-function bibdk_openuserstatus_get_loans_count_table($res) {
+function bibdk_openuserstatus_get_loans_count($res) {
   $count = '';
   if (!empty($res['loanedItems']['loansCount'])) {
     $count = '(' . $res['loanedItems']['loansCount'] . ')';
@@ -85,14 +84,15 @@ function bibdk_openuserstatus_get_loans_count_table($res) {
  * @return array
  */
 function bibdk_openuserstatus_get_ready_for_pickup_table($res) {
+  dpm($res);
   $data['items'] = array();
   if (!empty($res['orderedItems']['order'])) {
     $data['items'] = bibdk_openuserstatus_get_ready_for_pickup_materials($res['orderedItems']['order']);
   }
 
   $data['header'] = array(
-    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'pickup_date' => t('pickup_date_header', array(), array('context' => 'bibdk_openuserstatus')),
     'pickup_id' => t('pickup_id_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
@@ -110,8 +110,8 @@ function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
   foreach ($res as $reservation) {
     if(isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup'){
       $item = array();
-      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
       $item['pickup_id'] = $reservation['pickUpId'];
       $items[] = $item;
@@ -131,8 +131,8 @@ function bibdk_openuserstatus_get_reservations_table($res) {
   }
 
   $data['header'] = array(
-    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'reservation_date' => t('reservation_date', array(), array('context' => 'bibdk_openuserstatus')),
     'queue_position' => t('queue_position', array(), array('context' => 'bibdk_openuserstatus')),
   );
@@ -151,8 +151,8 @@ function bibdk_openuserstatus_materials_in_process($res) {
   foreach ($res as $reservation) {
     if(isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process'){
       $item = array();
-      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
       $items[] = $item;
@@ -173,9 +173,9 @@ function bibdk_openuserstatus_get_fiscal_account_table($res) {
   }
 
   $data['header'] = array(
-    'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
     'material' => t('material_header', array(), array('context' => 'bibdk_openuserstatus')),
     'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
     'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
 
@@ -192,9 +192,9 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
   $items = array();
   foreach ($res as $reservation) {
     $item = array();
-    $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
     $item['type'] = $reservation['fiscalTransactionType'];
+    $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
     $items[] = $item;
   }
