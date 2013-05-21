@@ -82,3 +82,18 @@ function bibdk_openuserstatus_get_params() {
   $params['outputType'] = 'json';
   return $params;
 }
+
+/**
+ * @param $agencyId
+ * @return null|string
+ */
+function bibdk_openuserstatus_get_agencyname($agencyId) {
+  $client = new ting_client_class();
+  $response = $client->do_agency(array('agencyId' => $agencyId, 'action' => 'findLibraryRequest'));
+  if(isset($response->findLibraryResponse->pickupAgency)){
+    $agency = $response->findLibraryResponse->pickupAgency[0];
+    return $agency->agencyName->{'$'};
+  } else {
+   return t('agencyname_not_found', array(), array('context' => 'bibdk_openuserstatus'));
+  }
+}

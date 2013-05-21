@@ -12,7 +12,6 @@ function bibdk_openuserstatus_form($form) {
   }
 
   $response = $res->getResponse();
-  dpm($response);
 
   $form['tables'] = bibdk_openuserstatus_get_tables($response);
   return $form;
@@ -62,7 +61,7 @@ function bibdk_openuserstatus_get_loaned_items($loan) {
     $item = array();
     $item['library'] = 'unknown';
     $item['material'] = $material['author'] . ': ' . $material['title'];
-    $item['returned'] = $material['dateDue'];
+    $item['returned'] = date('d.m.Y', strtotime($material['dateDue']));
     $item['mark'] = 'checkbox';
     $items[] = $item;
   }
@@ -111,9 +110,9 @@ function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
   foreach ($res as $reservation) {
     if(isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup'){
       $item = array();
-      $item['library'] = $reservation['pickUpAgency'];
+      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['pickup_date'] = $reservation['pickUpExpiryDate'];
+      $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
       $item['pickup_id'] = $reservation['pickUpId'];
       $items[] = $item;
     }
@@ -152,9 +151,9 @@ function bibdk_openuserstatus_materials_in_process($res) {
   foreach ($res as $reservation) {
     if(isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process'){
       $item = array();
-      $item['library'] = $reservation['pickUpAgency'];
+      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['reservation_date'] = $reservation['orderDate'];
+      $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
       $items[] = $item;
     }
@@ -193,7 +192,7 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
   $items = array();
   foreach ($res as $reservation) {
     $item = array();
-    $item['date'] = $reservation['fiscalTransactionDate'];
+    $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
     $item['type'] = $reservation['fiscalTransactionType'];
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
