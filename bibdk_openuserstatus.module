@@ -1,7 +1,5 @@
 <?php
-
 module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
-
 /**
  * Impelements user_profile_tabs (
  * @see ding_user.module)
@@ -9,7 +7,7 @@ module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatu
 function bibdk_openuserstatus_user_profile2_tabs() {
   $ret = new stdClass();
   $ret->label = t('my_loanerstatus', array(), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_form';
+  $ret->form = 'bibdk_openuserstatus_get_tables';
   $ret->type = 'bibdk_openuserstatus';
   return $ret;
 }
@@ -19,7 +17,7 @@ function bibdk_openuserstatus_user_profile2_tabs() {
  * @return array
  */
 function bibdk_openuserstatus_menu() {
-  $items = array();
+  //TODO XXX is this necessary?
   $items['user/loanerstatus'] = array(
     'title' => t('Loanerstatus'),
     'page callback' => 'drupal_get_form',
@@ -27,8 +25,11 @@ function bibdk_openuserstatus_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_LOCAL_TASK,
   );
+
   return $items;
 }
+
+
 
 /**
  * Implements hook_theme().
@@ -46,8 +47,15 @@ function bibdk_openuserstatus_theme() {
       'variables' => array(
         'count' => '',
         'table' => '',
+        'actions' => '',
       ),
       'template' => 'theme/bibdk_openuserstatus_table'
+    ),
+    'bibdk_openuserstatus_table_actions' => array(
+      'variables' => array(
+        'actions' => '',
+      ),
+      'template' => 'theme/bibdk_openuserstatus_table_actions'
     ),
   );
 }

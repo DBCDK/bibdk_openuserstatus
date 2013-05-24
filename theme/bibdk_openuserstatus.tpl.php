@@ -7,7 +7,7 @@
   <a href="#loans">loans</a>
   <a href="#reservations">reservations</a>
   <a href="#fiscal">fiscal</a>
-  <hr/>
+
   <?php foreach ($tables as $table) : ?>
     <?php print $table; ?>
   <?php endforeach; ?>
