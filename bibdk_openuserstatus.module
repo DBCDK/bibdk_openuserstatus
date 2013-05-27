@@ -5,41 +5,13 @@ module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatu
  * @see ding_user.module)
  * */
 function bibdk_openuserstatus_user_profile2_tabs() {
+  global $user;
+  $username = isset($user->mail) ? ' - ' . $user->mail : '';
   $ret = new stdClass();
-  $ret->label = t('my_loanerstatus', array(), array('context' => 'bibdk_openuserstatus'));
+  $ret->label = t('my_loanerstatus @username', array('@username' => $username), array('context' => 'bibdk_openuserstatus'));
   $ret->form = 'bibdk_openuserstatus_form';
   $ret->type = 'bibdk_openuserstatus';
   return $ret;
-}
-
-
-/**
- * Implements hook_theme().
- * @return array
- */
-function bibdk_openuserstatus_theme() {
-  return array(
-    'bibdk_openuserstatus' => array(
-      'variables' => array(
-        'tables' => '',
-      ),
-      'template' => 'theme/bibdk_openuserstatus',
-    ),
-    'bibdk_openuserstatus_table' => array(
-      'variables' => array(
-        'count' => '',
-        'table' => '',
-        'actions' => '',
-      ),
-      'template' => 'theme/bibdk_openuserstatus_table'
-    ),
-    'bibdk_openuserstatus_table_actions' => array(
-      'variables' => array(
-        'actions' => '',
-      ),
-      'template' => 'theme/bibdk_openuserstatus_table_actions'
-    ),
-  );
 }
 
 /**

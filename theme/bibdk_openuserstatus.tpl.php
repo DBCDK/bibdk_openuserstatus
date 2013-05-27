@@ -1,14 +1,8 @@
-<div class="userstatus">
-  <h2>Loanerstatus</h2>
+<p>
+  <?php print t('Here goes basic information blah-blah...', array(), array('bibdk_openuserstatus')) ?>
+</p>
 
-  <p>blah-blah</p>
-
-  <p>Go to:</p>
-  <a href="#loans">loans</a>
-  <a href="#reservations">reservations</a>
-  <a href="#fiscal">fiscal</a>
-
-  <?php foreach ($tables as $table) : ?>
-    <?php print $table; ?>
-  <?php endforeach; ?>
-</div>
+<p>Go to:</p>
+<a href="#loans">loans</a>
+<a href="#reservations">reservations</a>
+<a href="#fiscal">fiscal</a>

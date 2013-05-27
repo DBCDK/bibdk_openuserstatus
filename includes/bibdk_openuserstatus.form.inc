@@ -17,7 +17,7 @@ function bibdk_openuserstatus_form($form) {
  * @return string
  */
 function bibdk_openuserstatus_get_tables($form, $response) {
-  //TODO mmj create basic info -- @see theme/bibdk_openuserstatus.tpl.php
+  $form = bibdk_opensuser_get_basic_information($form);
   $form = bibdk_openuserstatus_get_loans_table($form, $response);
 
   $reservations = bibdk_openuserstatus_get_reservations($response);
@@ -26,6 +26,14 @@ function bibdk_openuserstatus_get_tables($form, $response) {
 
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
 
+  return $form;
+}
+
+function bibdk_opensuser_get_basic_information($form) {
+  $form['basics'] = array(
+    '#type' => 'markup',
+    '#markup' => theme('bibdk_openuserstatus'),
+  );
   return $form;
 }
 
@@ -116,11 +124,13 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
  */
 function bibdk_openuserstatus_get_loans_table_form($form, $data) {
   $loans = t('Loans', array(), array('context' => 'bibdk_userstatus'));
-  $loansCount = (!empty($data['items'])) ? $loans . ' (' . count($data['items']) . ')' : $loans;
+  $loansCount = (!empty($data['items'])) ? $loans . ' <span>(' . count($data['items']) . ')</span>' : $loans;
 
   $form['loans']['loans_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $loansCount . '</h2>'
+    '#markup' => '<h2>' . $loansCount . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
   );
 
   $form['loans']['loans_table'] = array(
@@ -254,11 +264,13 @@ function bibdk_openuserstatus_select($form, &$form_state, $lib, $default) {
  */
 function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
   $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
-  $reservationsCount = (!empty($data['items'])) ? $reservations . ' (' . count($data['items']) . ')' : $reservations;
+  $reservationsCount = (!empty($data['items'])) ? $reservations . ' <span>(' . count($data['items']) . ')</span>' : $reservations;
 
   $form['reservations']['reservations_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $reservationsCount . '</h2>'
+    '#markup' => '<h2>' . $reservationsCount . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
   );
 
   $form['reservations']['reservations_table'] = array(
@@ -321,11 +333,13 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
  */
 function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
-  $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' (' . count($data['items']) . ')' : $readyforpcikTxt;
+  $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' <span>(' . count($data['items']) . ')</span>' : $readyforpcikTxt;
 
   $form['readyforpickup']['readyforpickup_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $readyforpcikCount . '</h2>'
+    '#markup' => '<h2>' . $readyforpcikCount . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
   );
 
   $form['readyforpickup']['readyforpickup_table'] = array(
@@ -386,11 +400,13 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
  */
 function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
-  $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' (' . count($data['items']) . ')' : $fiscalBaseTxt;
+  $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' <span>(' . count($data['items']) . ')</span>' : $fiscalBaseTxt;
 
   $form['fiscal']['fiscal_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $fiscalTxt . '</h2>'
+    '#markup' => '<h2>' . $fiscalTxt . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
   );
 
   $form['fiscal']['fiscal_table'] = array(
