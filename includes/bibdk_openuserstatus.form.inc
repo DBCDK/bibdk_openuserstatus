@@ -1,24 +1,12 @@
 <?php
 
 /**
- * @return object
- */
-function bibdk_openuserstatus_form() {
-  $res = bibdk_openuserstatus_request();
-  /*
-  if ($res->getError()) {
-    //TODO handle error
-  }*/
-
-  return $res;
-}
-
-/**
  * @param $form
  * @return string
  */
-function bibdk_openuserstatus_get_form($form) {
-  $response = bibdk_openuserstatus_form();
+function bibdk_openuserstatus_form($form) {
+  $response = bibdk_openuserstatus_request();
+  //TODO mmj do error check
   $form = bibdk_openuserstatus_get_tables($form, $response);
   return $form;
 }
@@ -29,6 +17,7 @@ function bibdk_openuserstatus_get_form($form) {
  * @return string
  */
 function bibdk_openuserstatus_get_tables($form, $response) {
+  //TODO mmj create basic info -- @see theme/bibdk_openuserstatus.tpl.php
   $form = bibdk_openuserstatus_get_loans_table($form, $response);
 
   $reservations = bibdk_openuserstatus_get_reservations($response);
@@ -129,16 +118,6 @@ function bibdk_openuserstatus_get_loans_table_form($form, $data) {
   $loans = t('Loans', array(), array('context' => 'bibdk_userstatus'));
   $loansCount = (!empty($data['items'])) ? $loans . ' (' . count($data['items']) . ')' : $loans;
 
-  $form['loans'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'element-wrapper'
-      ),
-    ),
-  );
-
-  //TODO is it possible to do a #theme on $form['loans'] ?
   $form['loans']['loans_name'] = array(
     '#type' => 'markup',
     '#markup' => '<h2>' . $loansCount . '</h2>'
@@ -198,7 +177,7 @@ function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
 function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
   $data['items'] = array();
   if (!empty($reservations)) {
-    $data['items'] = bibdk_openuserstatus_materials_in_process($reservations);
+    $data['items'] = bibdk_openuserstatus_materials_in_process($form, $reservations);
   }
 
   $data['header'] = array(
@@ -215,23 +194,57 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
 }
 
 /**
+ * @param $form
  * @param $res
  * @return array
  */
-function bibdk_openuserstatus_materials_in_process($res) {
+function bibdk_openuserstatus_materials_in_process(&$form, $res) {
+  $favourites = bibdk_openuserstatus_get_favourites_array();
+
   $items = array();
   foreach ($res as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process') {
       $item = array();
       $orderId = $reservation['orderId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
+      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation['pickUpAgency']));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
       $items[$orderId] = $item;
     }
   }
   return $items;
+}
+
+/**
+ * @return array
+ */
+function bibdk_openuserstatus_get_favourites_array() {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  $arr = array();
+  foreach ($favourites as $favourite) {
+    $arr['DK-' . $favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+  }
+  return $arr;
+}
+
+/**
+ * Returns a form array representing a select box. This is done in a
+ * drupal_get_form to ensure the #default_value functionality
+ *
+ * @param $form
+ * @param $form_state
+ * @param $lib
+ * @param $default
+ * @return array
+ */
+function bibdk_openuserstatus_select($form, &$form_state, $lib, $default) {
+  $form['select'] = array(
+    '#type' => 'select',
+    '#options' => $lib,
+    '#default_value' => $default,
+  );
+  return $form;
 }
 
 /**
@@ -242,15 +255,6 @@ function bibdk_openuserstatus_materials_in_process($res) {
 function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
   $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
   $reservationsCount = (!empty($data['items'])) ? $reservations . ' (' . count($data['items']) . ')' : $reservations;
-
-  $form['reservations'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'element-wrapper'
-      ),
-    ),
-  );
 
   $form['reservations']['reservations_name'] = array(
     '#type' => 'markup',
@@ -274,7 +278,6 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
     $form['reservations']['reservations_delete'] = array(
       '#type' => 'submit',
       '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
-      #'#executes_submit_callback' => TRUE,
       '#submit' => array('bibdk_openuserstatus_delete_selected'),
     );
   }
@@ -319,15 +322,6 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
 function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
   $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' (' . count($data['items']) . ')' : $readyforpcikTxt;
-
-  $form['readyforpickup'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'element-wrapper'
-      ),
-    ),
-  );
 
   $form['readyforpickup']['readyforpickup_name'] = array(
     '#type' => 'markup',
@@ -394,15 +388,6 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
   $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' (' . count($data['items']) . ')' : $fiscalBaseTxt;
 
-  $form['fiscal'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'element-wrapper'
-      ),
-    ),
-  );
-
   $form['fiscal']['fiscal_name'] = array(
     '#type' => 'markup',
     '#markup' => '<h2>' . $fiscalTxt . '</h2>'
@@ -412,11 +397,6 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
     '#type' => 'markup',
     '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
   );
-  /*
-  $form['fiscal'] = array(
-    '#type' => 'markup',
-    '#markup' => theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_fiscal_account_table())),
-  );*/
 
   return $form;
 }

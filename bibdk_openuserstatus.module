@@ -7,29 +7,10 @@ module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatu
 function bibdk_openuserstatus_user_profile2_tabs() {
   $ret = new stdClass();
   $ret->label = t('my_loanerstatus', array(), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_get_form';
+  $ret->form = 'bibdk_openuserstatus_form';
   $ret->type = 'bibdk_openuserstatus';
   return $ret;
 }
-
-/**
- * Implements hook_menu().
- * @return array
- */
-function bibdk_openuserstatus_menu() {
-  //TODO XXX is this necessary?
-  /*
-  $items['user/loanerstatus'] = array(
-    'title' => t('Loanerstatus'),
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('bibdk_openuserstatus_form'),
-    'access arguments' => array('access content'),
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  return $items;*/
-}
-
 
 
 /**
@@ -85,7 +66,7 @@ function bibdk_openuserstatus_request() {
   foreach ($favourites as $favourite) {
     $params = bibdk_openuserstatus_get_params($favourite);
     if (isset($params['error'])) {
-      $error->getUserStatusResponse->getUserStatusError->{'$'}=$params['error'];
+      $error->getUserStatusResponse->getUserStatusError->{'$'} = $params['error'];
       $ret[$favourite->getAgencyId()] = new UserStatusResponse($error);
     }
     else {
@@ -104,32 +85,27 @@ function bibdk_openuserstatus_request() {
       }
     }
   }
-  
-  
-  
   return $ret;
 }
 
 /** Implements hook_bibdk_reservation_complete
  *
- * unset $_SESSION variable for given library to 
+ * unset $_SESSION variable for given library to
  * refresh orderlist
- * 
+ *
  * @param mixed $pids; an array of order pid's
  * @param mixed $result; .. orderid of completed order
  */
-function bibdk_openuserstatus_bibdk_reservation_complete ($pids, $result) {
+function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
   $library = BibdkReservationOrderObject::GetObject()->getBranchId();
-  if(strpos($library, 'DK-') === 0){
+  if (strpos($library, 'DK-') === 0) {
     // strip 'DK-' from librarynumber
     $library = substr($library, 3, strlen($library));
   }
-  if( isset($_SESSION['userStatus'][$library])){
+  if (isset($_SESSION['userStatus'][$library])) {
     unset($_SESSION['userStatus'][$library]);
-  }  
+  }
 }
-
-
 
 
 function bibdk_openuserstatus_get_params($favourite) {
@@ -162,16 +138,6 @@ function bibdk_openuserstatus_get_favourites() {
   }
   return $ret;
 }
-
-/*function bibdk_openuserstatus_get_test_params() {
-  $params = array();
-  $params['action'] = 'getUserStatusRequest';
-  $params['userId'] = '0413392648';
-  $params['userPincode'] = '1234';
-  $params['agencyId'] = 'DK-737600';
-  $params['outputType'] = 'json';
-  return $params;
-}*/
 
 /**
  * @param $agencyId
