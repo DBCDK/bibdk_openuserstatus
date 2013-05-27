@@ -15,10 +15,9 @@ function bibdk_openuserstatus_form() {
 
 /**
  * @param $form
- * @param $form_state
- * @return mixed
+ * @return string
  */
-function bibdk_openuserstatus_get_form($form, &$form_state) {
+function bibdk_openuserstatus_get_form($form) {
   $response = bibdk_openuserstatus_form();
   $form = bibdk_openuserstatus_get_tables($form, $response);
   return $form;
@@ -112,10 +111,11 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
   foreach ($loans as $material) {
     $item = array();
+    $loanId = $material['loanId'];
     $item['material'] = $material['author'] . ': ' . $material['title'];
     $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
     $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
-    $items[] = $item;
+    $items[$loanId] = $item;
   }
   return $items;
 }
@@ -192,8 +192,7 @@ function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
 
 /**
  * @param $form
- * @param $form_state
- * @param null $res
+ * @param $reservations
  * @return array
  */
 function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
@@ -224,11 +223,12 @@ function bibdk_openuserstatus_materials_in_process($res) {
   foreach ($res as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process') {
       $item = array();
+      $orderId = $reservation['orderId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
       $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
-      $items[] = $item;
+      $items[$orderId] = $item;
     }
   }
   return $items;
@@ -236,9 +236,8 @@ function bibdk_openuserstatus_materials_in_process($res) {
 
 /**
  * @param $form
- * @param $form_state
- * @param array $data
- * @return array $form
+ * @param $data
+ * @return mixed
  */
 function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
   $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
@@ -291,8 +290,9 @@ function bibdk_openuserstatus_delete_selected($form, &$form_state) {
 }
 
 /**
- * @param $res
- * @return array
+ * @param $form
+ * @param $reservations
+ * @return mixed
  */
 function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations) {
   $data['items'] = array();
@@ -308,10 +308,14 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
-  #return bibdk_openuserstatus_get_table($form, $data);
   return bibdk_openuserstatus_get_readyforpickup_table($form, $data);
 }
 
+/**
+ * @param $form
+ * @param $data
+ * @return mixed
+ */
 function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
   $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' (' . count($data['items']) . ')' : $readyforpcikTxt;
@@ -358,6 +362,31 @@ function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
 
 /**
  * @param $form
+ * @param $response
+ * @return mixed
+ */
+function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
+  $fiscals = bibdk_openuserstatus_get_fiscals($response);
+  $data['items'] = array();
+
+  if (!empty($fiscals)) {
+    $data['items'] = bibdk_openuserstatus_get_fiscal_materials($fiscals);
+  }
+
+  $data['header'] = array(
+    'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
+    'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
+
+  $data['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
+
+  return bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
+}
+
+/**
+ * @param $form
  * @param $data
  * @return mixed
  */
@@ -390,35 +419,6 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   );*/
 
   return $form;
-}
-
-/**
- * @param $res
- * @return array
- */
-function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
-  $fiscals = bibdk_openuserstatus_get_fiscals($response);
-  $data['items'] = array();
-
-  if (!empty($fiscals)) {
-    $data['items'] = bibdk_openuserstatus_get_fiscal_materials($fiscals);
-  }
-
-  $data['header'] = array(
-    'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
-    'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
-  );
-
-  $data['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
-
-  $form['fiscal'] = array(
-    '#type' => 'markup',
-    '#markup'
-  );
-
-  return bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
 }
 
 /**
