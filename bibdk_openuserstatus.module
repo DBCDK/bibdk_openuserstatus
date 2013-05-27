@@ -76,7 +76,8 @@ function bibdk_openuserstatus_request() {
   foreach ($favourites as $favourite) {
     $params = bibdk_openuserstatus_get_params($favourite);
     if (isset($params['error'])) {
-      $ret[$favourite->getAgencyId()]['status'] = $params['error'];
+      $error->getUserStatusResponse->getUserStatusError->{'$'}=$params['error'];
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse($error);
     }
     else {
       $res = $favourite->getUserStatus();
