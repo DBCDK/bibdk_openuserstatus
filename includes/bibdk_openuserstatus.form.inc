@@ -29,6 +29,13 @@ function bibdk_openuserstatus_get_tables($form, $response) {
   return $form;
 }
 
+/**
+ * Provides basic information printet at the top of the profile2 userstatus page
+ *
+ * @see theme/bibdk_openuserstatus.tpl.php
+ * @param $form
+ * @return mixed
+ */
 function bibdk_opensuser_get_basic_information($form) {
   $form['basics'] = array(
     '#type' => 'markup',
@@ -455,6 +462,8 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
 }
 
 /**
+ * Returns a renderarray representing a basic table with no interactive elements
+ *
  * @param array $data
  * @return array
  */

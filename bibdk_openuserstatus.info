@@ -4,6 +4,7 @@ package = Bibliotek.dk
 core = 7.x
 version = 7.x-0.1-dev
 
+dependencies[] = bibdk_favourite
 dependencies[] = ting_openuserstatus
 dependencies[] = ting_agency
 
