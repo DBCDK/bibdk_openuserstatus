@@ -95,8 +95,33 @@ function bibdk_openuserstatus_request() {
       }
     }
   }
+  
+  
+  
   return $ret;
 }
+
+/** Implements hook_bibdk_reservation_complete
+ *
+ * unset $_SESSION variable for given library to 
+ * refresh orderlist
+ * 
+ * @param mixed $pids; an array of order pid's
+ * @param mixed $result; .. orderid of completed order
+ */
+function bibdk_openuserstatus_bibdk_reservation_complete ($pids, $result) {
+  $library = BibdkReservationOrderObject::GetObject()->getBranchId();
+  if(strpos($library, 'DK-') === 0){
+    // strip 'DK-' from librarynumber
+    $library = substr($library, 3, strlen($library));
+  }
+  if( isset($_SESSION['userStatus'][$library])){
+    unset($_SESSION['userStatus'][$library]);
+  }  
+}
+
+
+
 
 function bibdk_openuserstatus_get_params($favourite) {
   $params = array();
