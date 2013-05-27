@@ -7,7 +7,7 @@ module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatu
 function bibdk_openuserstatus_user_profile2_tabs() {
   $ret = new stdClass();
   $ret->label = t('my_loanerstatus', array(), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_get_tables';
+  $ret->form = 'bibdk_openuserstatus_get_form';
   $ret->type = 'bibdk_openuserstatus';
   return $ret;
 }
@@ -18,6 +18,7 @@ function bibdk_openuserstatus_user_profile2_tabs() {
  */
 function bibdk_openuserstatus_menu() {
   //TODO XXX is this necessary?
+  /*
   $items['user/loanerstatus'] = array(
     'title' => t('Loanerstatus'),
     'page callback' => 'drupal_get_form',
@@ -26,7 +27,7 @@ function bibdk_openuserstatus_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
-  return $items;
+  return $items;*/
 }
 
 
@@ -71,7 +72,7 @@ function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
 
 /**
  * do a request
- * @return bool|string | UserStatusResponse
+ * @return UserStatusResponse|bool|string
  */
 function bibdk_openuserstatus_request() {
 
@@ -162,7 +163,7 @@ function bibdk_openuserstatus_get_favourites() {
   return $ret;
 }
 
-function bibdk_openuserstatus_get_test_params() {
+/*function bibdk_openuserstatus_get_test_params() {
   $params = array();
   $params['action'] = 'getUserStatusRequest';
   $params['userId'] = '0413392648';
@@ -170,7 +171,7 @@ function bibdk_openuserstatus_get_test_params() {
   $params['agencyId'] = 'DK-737600';
   $params['outputType'] = 'json';
   return $params;
-}
+}*/
 
 /**
  * @param $agencyId

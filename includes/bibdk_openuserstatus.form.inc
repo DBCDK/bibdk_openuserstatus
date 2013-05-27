@@ -1,70 +1,77 @@
 <?php
 
 /**
- * @param $form
- * @internal param $form_state
- * @return array
+ * @return object
  */
 function bibdk_openuserstatus_form() {
   $res = bibdk_openuserstatus_request();
+  /*
   if ($res->getError()) {
     //TODO handle error
-  }
+  }*/
 
-  $response = $res->getResponse();
-  return $response;
-}
-
-function bibdk_openuserstatus_get_tables($form, &$form_state) {
-  $response = bibdk_openuserstatus_form();
-
-  $form['userstatus'] = array(
-    '#type' => 'markup',
-    '#markup' => bibdk_openuserstatus_get_markup($response, $form),
-  );
-
-  return $form;
-  /*
-  bibdk_openuserstatus_form(NULL);
-  #$a = bibdk_openuserstatus_get_loans_table($response);
-  $a = theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_loans_table($response)));
-  $b = theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_reservations_table($response)));
-  #dpm($a, 'a');
-  #dpm($b, 'b');
-
-
-  $arr =  array(
-    '#markup' => theme('bibdk_openuserstatus', array(
-      'tables' => array(
-        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_ready_for_pickup_table($response))),
-        $a,
-
-        $b,
-        theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_fiscal_account_table($response))),
-      ),
-    )),
-  );
-  return $arr;*/
-}
-
-function bibdk_openuserstatus_get_markup($response, $form) {
-  $loans = bibdk_openuserstatus_get_loans($response);
-  $loansTable = bibdk_openuserstatus_get_loans_table($loans);
-  return 'hest';
-}
-
-function bibdk_openuserstatus_get_loans($response) {
-  return $response['loanedItems']['loan'];
+  return $res;
 }
 
 /**
- * @param $res
- * @return array $data
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
-function bibdk_openuserstatus_get_loans_table($res = NULL) {
+function bibdk_openuserstatus_get_form($form, &$form_state) {
+  $response = bibdk_openuserstatus_form();
+  $form = bibdk_openuserstatus_get_tables($form, $response);
+  return $form;
+}
+
+/**
+ * @param $response
+ * @param $form
+ * @return string
+ */
+function bibdk_openuserstatus_get_tables($form, $response) {
+  $form = bibdk_openuserstatus_get_loans_table($form, $response);
+
+  $reservations = bibdk_openuserstatus_get_reservations($response);
+  $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
+  $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations);
+
+  $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
+
+  return $form;
+}
+
+/**
+ * @param $response
+ * @return string
+ */
+function bibdk_openuserstatus_get_reservations($response) {
+  $reservations = array();
+  foreach ($response as $id => $favourite) {
+    if (is_object($favourite)) {
+      $resp = $favourite->getResponse();
+      if (isset($resp['orderedItems']['order'])) {
+        foreach ($resp['orderedItems']['order'] as $orderedItem) {
+          $orderedItem['agencyId'] = $id;
+          $reservations[] = $orderedItem;
+        }
+      }
+    }
+  }
+  return $reservations;
+}
+
+/**
+ * @param $form
+ * @param $response
+ * @return array
+ */
+function bibdk_openuserstatus_get_loans_table($form, $response) {
+  $loans = bibdk_openuserstatus_get_loans($response);
+
   $data['items'] = array();
-  if (!empty($res['loanedItems']['loan'])) {
-    $data['items'] = bibdk_openuserstatus_get_loaned_items($res['loanedItems']['loan']);
+  if (!empty($loans)) {
+    $data['items'] = bibdk_openuserstatus_get_loaned_items($loans);
   }
 
   $data['header'] = array(
@@ -74,34 +81,39 @@ function bibdk_openuserstatus_get_loans_table($res = NULL) {
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
-  return bibdk_openuserstatus_get_loans_table_form($data);
+  return bibdk_openuserstatus_get_loans_table_form($form, $data);
 }
 
 /**
- * @param $data
- * @param $res
+ * @param $response
  * @return string
  */
-/*
-function bibdk_openuserstaus_theme_loans_table_form($data, $res) {
-  $form = drupal_get_form('bibdk_openuserstatus_get_loans_table_form', $data);
-
-  $table = $form;
-  #$actions = theme('bibdk_openuserstatus_table_actions', array('actions' => array($form['renew_marked'])));
-  #$count = bibdk_openuserstatus_get_loans_count($res);
-  return theme('bibdk_openuserstatus_table', array('table' => $table));
-} */
+function bibdk_openuserstatus_get_loans($response) {
+  $loans = array();
+  foreach ($response as $id => $favourite) {
+    if (is_object($favourite)) {
+      $resp = $favourite->getResponse();
+      if (isset($resp['loanedItems']['loan'])) {
+        foreach ($resp['loanedItems']['loan'] as $loanedItem) {
+          $loanedItem['agencyId'] = $id;
+          $loans[] = $loanedItem;
+        }
+      }
+    }
+  }
+  return $loans;
+}
 
 /**
- * @param $loan
+ * @param $loans
  * @return array
  */
-function bibdk_openuserstatus_get_loaned_items($loan) {
+function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
-  foreach ($loan as $material) {
+  foreach ($loans as $material) {
     $item = array();
     $item['material'] = $material['author'] . ': ' . $material['title'];
-    $item['library'] = 'libraryname not provided';
+    $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
     $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
     $items[] = $item;
   }
@@ -109,29 +121,30 @@ function bibdk_openuserstatus_get_loaned_items($loan) {
 }
 
 /**
- * @param $res
- * @return string
+ * @param $form
+ * @param $data
+ * @return mixed
  */
-function bibdk_openuserstatus_get_loans_count($res) {
-  $count = '';
-  if (!empty($res['loanedItems']['loansCount'])) {
-    $count = '(' . $res['loanedItems']['loansCount'] . ')';
-  }
-  return $count;
-}
+function bibdk_openuserstatus_get_loans_table_form($form, $data) {
+  $loans = t('Loans', array(), array('context' => 'bibdk_userstatus'));
+  $loansCount = (!empty($data['items'])) ? $loans . ' (' . count($data['items']) . ')' : $loans;
 
-/**
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_loans_table_form($data) {
-  $form['loans']['name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>Loans</h2>'
+  $form['loans'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'element-wrapper'
+      ),
+    ),
   );
 
+  //TODO is it possible to do a #theme on $form['loans'] ?
+  $form['loans']['loans_name'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . $loansCount . '</h2>'
+  );
 
-  $form['loans']['table'] = array(
+  $form['loans']['loans_table'] = array(
     '#type' => 'tableselect',
     '#header' => $data['header'],
     '#options' => $data['items'],
@@ -145,15 +158,13 @@ function bibdk_openuserstatus_get_loans_table_form($data) {
   );
 
   if (!empty($data['items'])) {
-    /*
-    $form['renew_all'] = array(
+    $form['loans']['loans_renew_all'] = array(
       '#type' => 'submit',
-      '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
-      #'#executes_submit_callback' => FALSE,
-      '#submit' => array('bibdk_openuserstatus_delete_selected'),
-    );*/
+      '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
+      '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
+    );
 
-    $form['loans']['renew_marked'] = array(
+    $form['loans']['loans_renew_marked'] = array(
       '#type' => 'submit',
       '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
       '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
@@ -161,10 +172,6 @@ function bibdk_openuserstatus_get_loans_table_form($data) {
   }
 
   return $form;
-}
-
-function bibdk_openuserstatus_get_loans_table_form_submit($form, &$form_state) {
-  dpm('bibdk_openuserstatus_get_loans_table_form');
 }
 
 /**
@@ -175,61 +182,24 @@ function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
   dpm($form_state, 'bibdk_openuserstatus_renew_marked_submit');
 }
 
-function bibdk_openuserstatus_form_form_submit($form, &$form_state) {
-  dpm('bibdk_openuserstatus_form_form_submit');
+/**
+ * @param $form
+ * @param $form_state
+ */
+function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
+  dpm($form_state, 'bibdk_openuserstatus_renew_all_submit');
 }
 
 /**
- * @param $res
+ * @param $form
+ * @param $form_state
+ * @param null $res
  * @return array
  */
-function bibdk_openuserstatus_get_ready_for_pickup_table($res) {
+function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
   $data['items'] = array();
-  if (!empty($res['orderedItems']['order'])) {
-    $data['items'] = bibdk_openuserstatus_get_ready_for_pickup_materials($res['orderedItems']['order']);
-  }
-
-  $data['header'] = array(
-    'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
-    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'pickup_date' => t('pickup_date_header', array(), array('context' => 'bibdk_openuserstatus')),
-    'pickup_id' => t('pickup_id_header', array(), array('context' => 'bibdk_openuserstatus')),
-  );
-  $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
-
-  return bibdk_openuserstatus_get_table($data);
-}
-
-/**
- * @param $res
- * @return array
- */
-function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
-  $items = array();
-  foreach ($res as $reservation) {
-    if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
-      $item = array();
-      $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
-      $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
-      $item['pickup_id'] = $reservation['pickUpId'];
-      $items[] = $item;
-    }
-  }
-  return $items;
-}
-
-/**
- * @param $res
- * @return array
- */
-function bibdk_openuserstatus_get_reservations_table($form, &$form_state, $res = NULL) {
-  if (!$res) {
-    $res = drupal_static('bibdk_openuserstatus_form');
-  }
-  $data['items'] = array();
-  if (!empty($res['orderedItems']['order'])) {
-    $data['items'] = bibdk_openuserstatus_materials_in_process($res['orderedItems']['order']);
+  if (!empty($reservations)) {
+    $data['items'] = bibdk_openuserstatus_materials_in_process($reservations);
   }
 
   $data['header'] = array(
@@ -241,7 +211,7 @@ function bibdk_openuserstatus_get_reservations_table($form, &$form_state, $res =
 
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
-  $form = bibdk_openuserstatus_get_reservations_table_form($data);
+  $form = bibdk_openuserstatus_get_reservations_table_form($form, $data);
   return $form;
 }
 
@@ -264,10 +234,105 @@ function bibdk_openuserstatus_materials_in_process($res) {
   return $items;
 }
 
-function bibdk_openuserstatus_get_fiscal_account_table_form($form, &$form_state) {
-  $form['fiscal'] = array(
+/**
+ * @param $form
+ * @param $form_state
+ * @param array $data
+ * @return array $form
+ */
+function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
+  $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
+  $reservationsCount = (!empty($data['items'])) ? $reservations . ' (' . count($data['items']) . ')' : $reservations;
+
+  $form['reservations'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'element-wrapper'
+      ),
+    ),
+  );
+
+  $form['reservations']['reservations_name'] = array(
     '#type' => 'markup',
-    '#markup' => theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_fiscal_account_table())),
+    '#markup' => '<h2>' . $reservationsCount . '</h2>'
+  );
+
+  $form['reservations']['reservations_table'] = array(
+    '#type' => 'tableselect',
+    '#header' => $data['header'],
+    '#options' => $data['items'],
+    '#empty' => $data['msg'],
+    '#js_select' => FALSE,
+    '#sticky' => FALSE,
+    '#multiple' => TRUE,
+    '#attributes' => array(
+      'class' => array(),
+    ),
+  );
+
+  if (!empty($data['items'])) {
+    $form['reservations']['reservations_delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
+      #'#executes_submit_callback' => TRUE,
+      '#submit' => array('bibdk_openuserstatus_delete_selected'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * @param $form
+ * @param $form_state
+ */
+function bibdk_openuserstatus_delete_selected($form, &$form_state) {
+  dpm($form_state, 'bibdk_openuserstatus_delete_selected');
+}
+
+/**
+ * @param $res
+ * @return array
+ */
+function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations) {
+  $data['items'] = array();
+  if (!empty($reservations)) {
+    $data['items'] = bibdk_openuserstatus_get_ready_for_pickup_materials($reservations);
+  }
+
+  $data['header'] = array(
+    'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
+    'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'pickup_date' => t('pickup_date_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'pickup_id' => t('pickup_id_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
+  $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+
+  #return bibdk_openuserstatus_get_table($form, $data);
+  return bibdk_openuserstatus_get_readyforpickup_table($form, $data);
+}
+
+function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
+  $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
+  $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' (' . count($data['items']) . ')' : $readyforpcikTxt;
+
+  $form['readyforpickup'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'element-wrapper'
+      ),
+    ),
+  );
+
+  $form['readyforpickup']['readyforpickup_name'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . $readyforpcikCount . '</h2>'
+  );
+
+  $form['readyforpickup']['readyforpickup_table'] = array(
+    '#type' => 'markup',
+    '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
   );
   return $form;
 }
@@ -276,15 +341,67 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, &$form_state)
  * @param $res
  * @return array
  */
-function bibdk_openuserstatus_get_fiscal_account_table($res = NULL) {
-  if (!$res) {
-    $res = drupal_static('bibdk_openuserstatus_form');
+function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
+  $items = array();
+  foreach ($res as $reservation) {
+    if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
+      $item = array();
+      $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
+      $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
+      $item['pickup_id'] = $reservation['pickUpId'];
+      $items[] = $item;
+    }
   }
+  return $items;
+}
 
+/**
+ * @param $form
+ * @param $data
+ * @return mixed
+ */
+function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
+  $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
+  $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' (' . count($data['items']) . ')' : $fiscalBaseTxt;
+
+  $form['fiscal'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'element-wrapper'
+      ),
+    ),
+  );
+
+  $form['fiscal']['fiscal_name'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . $fiscalTxt . '</h2>'
+  );
+
+  $form['fiscal']['fiscal_table'] = array(
+    '#type' => 'markup',
+    '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
+  );
+  /*
+  $form['fiscal'] = array(
+    '#type' => 'markup',
+    '#markup' => theme('bibdk_openuserstatus_table', array('table' => bibdk_openuserstatus_get_fiscal_account_table())),
+  );*/
+
+  return $form;
+}
+
+/**
+ * @param $res
+ * @return array
+ */
+function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
+  $fiscals = bibdk_openuserstatus_get_fiscals($response);
   $data['items'] = array();
 
-  if (!empty($res['fiscalAccount']['fiscalTransaction'])) {
-    $data['items'] = bibdk_openuserstatus_get_fiscal_materials($res['fiscalAccount']['fiscalTransaction']);
+  if (!empty($fiscals)) {
+    $data['items'] = bibdk_openuserstatus_get_fiscal_materials($fiscals);
   }
 
   $data['header'] = array(
@@ -301,7 +418,27 @@ function bibdk_openuserstatus_get_fiscal_account_table($res = NULL) {
     '#markup'
   );
 
-  return bibdk_openuserstatus_get_table($data);
+  return bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
+}
+
+/**
+ * @param $response
+ * @return string
+ */
+function bibdk_openuserstatus_get_fiscals($response) {
+  $fiscals = array();
+  foreach ($response as $id => $favourite) {
+    if (is_object($favourite)) {
+      $resp = $favourite->getResponse();
+      if (isset($resp['fiscalAccount']['fiscalTransaction'])) {
+        foreach ($resp['fiscalAccount']['fiscalTransaction'] as $loanedItem) {
+          $loanedItem['agencyId'] = $id;
+          $fiscals[] = $loanedItem;
+        }
+      }
+    }
+  }
+  return $fiscals;
 }
 
 /**
@@ -337,59 +474,4 @@ function bibdk_openuserstatus_get_table($data) {
       ),
     ),
   );
-}
-
-/**
- * @param $form
- * @param $form_state
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_reservations_table_form($data) {
-  /*
-  $form['reservations'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(
-        'element-wrapper'
-      ),
-    ),
-  );*/
-
-  $form['reservations']['name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>Reservations</h2>'
-  );
-
-  $form['reservations']['table'] = array(
-    '#type' => 'tableselect',
-    '#header' => $data['header'],
-    '#options' => $data['items'],
-    '#empty' => $data['msg'],
-    '#js_select' => FALSE,
-    '#sticky' => FALSE,
-    '#multiple' => TRUE,
-    '#attributes' => array(
-      'class' => array(),
-    ),
-  );
-
-  if (!empty($data['items'])) {
-    $form['reservations']['delete'] = array(
-      '#type' => 'submit',
-      '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
-      '#executes_submit_callback' => TRUE,
-      '#submit' => array('bibdk_openuserstatus_delete_selected'),
-    );
-  }
-  return $form;
-}
-
-/**
- * @param $form
- * @param $form_state
- */
-function bibdk_openuserstatus_delete_selected($form, &$form_state) {
-  dpm('bibdk_openuserstatus_delete_selected');
-  dpm($form_state);
 }
