@@ -1,8 +1,10 @@
 <?php
 
 /**
+ * Returns renderable form array containing tables representing the userstatus
+ *
  * @param $form
- * @return string
+ * @return array
  */
 function bibdk_openuserstatus_form($form) {
   $response = bibdk_openuserstatus_request();
@@ -12,9 +14,12 @@ function bibdk_openuserstatus_form($form) {
 }
 
 /**
- * @param $response
- * @param $form
- * @return string
+ * Collects tables for each area of the userstatus page and delivers it as one
+ * single form
+ *
+ * @param array $response
+ * @param array $form
+ * @return array
  */
 function bibdk_openuserstatus_get_tables($form, $response) {
   $form = bibdk_opensuser_get_basic_information($form);
@@ -45,8 +50,11 @@ function bibdk_opensuser_get_basic_information($form) {
 }
 
 /**
- * @param $response
- * @return string
+ * Extracts reservations from each favourite library and collects them in a
+ * single array
+ *
+ * @param array $response
+ * @return array $reservations
  */
 function bibdk_openuserstatus_get_reservations($response) {
   $reservations = array();
@@ -65,9 +73,11 @@ function bibdk_openuserstatus_get_reservations($response) {
 }
 
 /**
- * @param $form
- * @param $response
- * @return array
+ * Creates the necessary items and header arrays for the loans tableselect form
+ *
+ * @param array $form   The form array containing the entire form
+ * @param array $response The OpenUserstatus response
+ * @return array $form  The entire form array including the loans table
  */
 function bibdk_openuserstatus_get_loans_table($form, $response) {
   $loans = bibdk_openuserstatus_get_loans($response);
@@ -82,14 +92,20 @@ function bibdk_openuserstatus_get_loans_table($form, $response) {
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'returndate' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
+
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
-  return bibdk_openuserstatus_get_loans_table_form($form, $data);
+  $form = bibdk_openuserstatus_get_loans_table_form($form, $data);
+
+  return $form;
 }
 
 /**
- * @param $response
- * @return string
+ * Extracts the currently loaned items from each favourite library and collects
+ * them into a single array for easier parsing
+ *
+ * @param array $response
+ * @return array $loans
  */
 function bibdk_openuserstatus_get_loans($response) {
   $loans = array();
@@ -108,8 +124,10 @@ function bibdk_openuserstatus_get_loans($response) {
 }
 
 /**
- * @param $loans
- * @return array
+ * Creates the items array to be used in the loaned items tableselect form
+ *
+ * @param array $loans
+ * @return array $items
  */
 function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
@@ -125,9 +143,11 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
 }
 
 /**
- * @param $form
- * @param $data
- * @return mixed
+ * Returns the form array with the loaned items attached
+ *
+ * @param array $form
+ * @param array $data
+ * @return array $form
  */
 function bibdk_openuserstatus_get_loans_table_form($form, $data) {
   $loans = t('Loans', array(), array('context' => 'bibdk_userstatus'));
@@ -171,14 +191,18 @@ function bibdk_openuserstatus_get_loans_table_form($form, $data) {
 }
 
 /**
- * @param $form
- * @param $form_state
+ * Handles the form submission when the renew_marked button is hit
+ *
+ * @param array $form
+ * @param array $form_state
  */
 function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
   dpm($form_state, 'bibdk_openuserstatus_renew_marked_submit');
 }
 
 /**
+ * Handles the form submission when the renew_all button is hit
+ *
  * @param $form
  * @param $form_state
  */
@@ -187,14 +211,16 @@ function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
 }
 
 /**
- * @param $form
- * @param $reservations
- * @return array
+ * Creates the necessary items and header arrays for the ready_for_pickup table form
+ *
+ * @param array $form
+ * @param array $reservations
+ * @return array $form
  */
 function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
   $data['items'] = array();
   if (!empty($reservations)) {
-    $data['items'] = bibdk_openuserstatus_materials_in_process($form, $reservations);
+    $data['items'] = bibdk_openuserstatus_materials_in_process($reservations);
   }
 
   $data['header'] = array(
@@ -207,19 +233,22 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
   $form = bibdk_openuserstatus_get_reservations_table_form($form, $data);
+
   return $form;
 }
 
 /**
- * @param $form
- * @param $res
- * @return array
+ * Extracts the currently loaned items from each favourite library and collects
+ * them into a single array for easier parsing
+ *
+ * @param array $reservations
+ * @return array $items
  */
-function bibdk_openuserstatus_materials_in_process(&$form, $res) {
+function bibdk_openuserstatus_materials_in_process($reservations) {
   $favourites = bibdk_openuserstatus_get_favourites_array();
 
   $items = array();
-  foreach ($res as $reservation) {
+  foreach ($reservations as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process') {
       $item = array();
       $orderId = $reservation['orderId'];
