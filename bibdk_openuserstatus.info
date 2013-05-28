@@ -10,3 +10,4 @@ dependencies[] = ting_agency
 
 files[] = lib/UserStatusResponse.php
 files[] = includes/bibdk_openuserstatus.form.inc
+files[] = test/bibdk_openuserstatus.test
