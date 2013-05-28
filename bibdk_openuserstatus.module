@@ -24,8 +24,8 @@ function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
 }
 
 /**
- * do a request
- * @return UserStatusResponse|bool|string
+ * do a userStatusRequest
+ * @return bool|string | UserStatusResponse
  */
 function bibdk_openuserstatus_request() {
 
@@ -60,6 +60,10 @@ function bibdk_openuserstatus_request() {
   return $ret;
 }
 
+/**
+ * do a canceRequeest 
+ */
+
 /** Implements hook_bibdk_reservation_complete
  *
  * unset $_SESSION variable for given library to
@@ -74,11 +78,14 @@ function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
     // strip 'DK-' from librarynumber
     $library = substr($library, 3, strlen($library));
   }
-  if (isset($_SESSION['userStatus'][$library])) {
+  // @TODO should we just add an order to SESSION
+  // instead of updating the whole thing ??
+  // if we add an order from the data available, some elements will not be set
+  // and a refresh button is probably needed
+  if( isset($_SESSION['userStatus'][$library])){
     unset($_SESSION['userStatus'][$library]);
   }
 }
-
 
 function bibdk_openuserstatus_get_params($favourite) {
   $params = array();
