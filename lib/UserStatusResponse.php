@@ -13,9 +13,9 @@ class UserStatusResponse {
   /**
    * @param stdClass $response
    */
-  public function __construct($response) {
-    if (isset($response->getUserStatusResponse->getUserStatusError)) {
-      $this->setError($response->getUserStatusResponse->getUserStatusError->{'$'});
+  public function __construct($response=NULL,$error=FALSE) {
+    if (!empty($error)) {
+      $this->setError($error);
     }
     else if (isset($response->getUserStatusResponse)) {
       $this->_parseResponse($response->getUserStatusResponse);
