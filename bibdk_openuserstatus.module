@@ -36,45 +36,31 @@ function bibdk_openuserstatus_theme(){
 }
 
 /**
- * do a userStatusRequest
- * @return bool|string | UserStatusResponse
+ * get favourite libraries; get userstatus for each favourite
+ * @return array; empty array if no favourites; else [agencyId => UserStatusResponse]
  */
 function bibdk_openuserstatus_request() {
-
   $favourites = bibdk_openuserstatus_get_favourites();
   if (empty($favourites)) {
     return array();
   }
-
   $ret = array();
-  foreach ($favourites as $favourite) {
-    $params = bibdk_openuserstatus_get_params($favourite);
-    if (isset($params['error'])) {
-      $error->getUserStatusResponse->getUserStatusError->{'$'} = $params['error'];
-      $ret[$favourite->getAgencyId()] = new UserStatusResponse($error);
+  foreach ($favourites as $favourite) {    
+    $res = $favourite->getUserStatus();
+    
+    if ($res === FALSE) {
+      continue;
     }
-    else {
-      $res = $favourite->getUserStatus();
-      if ($res) {
-        $ret[$favourite->getAgencyId()] = $res;
-        continue;
-      }
-      $client = new ting_client_class();
-      // this is the real request
-      $response = $client->do_request('openuserstatus', $params);
-      if ($response) {
-        $response = new UserStatusResponse($response);
-        $ret[$favourite->getAgencyId()] = $response;
-        $favourite->setUserStatus($response);
-      }
+    
+    if (isset($res['error'])) {      
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse(NULL,$res['error']);
+    }
+    else{
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse($res['response']);
     }
   }
   return $ret;
 }
-
-/**
- * do a canceRequeest 
- */
 
 /** Implements hook_bibdk_reservation_complete
  *
@@ -85,6 +71,8 @@ function bibdk_openuserstatus_request() {
  * @param mixed $result; .. orderid of completed order
  */
 function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
+  // if an order has been completed BibdkReservationOrderObject is set
+  // (@see bibdk_reservation.module::bibdk_reservation_new_order_object
   $library = BibdkReservationOrderObject::GetObject()->getBranchId();
   if (strpos($library, 'DK-') === 0) {
     // strip 'DK-' from librarynumber
@@ -97,20 +85,6 @@ function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
   if( isset($_SESSION['userStatus'][$library])){
     unset($_SESSION['userStatus'][$library]);
   }
-}
-
-function bibdk_openuserstatus_get_params($favourite) {
-  $params = array();
-  $params['action'] = 'getUserStatusRequest';
-  $params['userId'] = $favourite->getUserId();
-  $params['userPincode'] = $favourite->getPinCode();
-  $params['agencyId'] = 'DK-' . $favourite->getAgencyId();
-  $params['outputType'] = 'json';
-
-  if (!$params['userId'] || !$params['userPincode']) {
-    $params['error'] = t('incomplete_user_data', array(), array('context' => 'bibdk_openuserstatus'));
-  }
-  return $params;
 }
 
 function bibdk_openuserstatus_get_favourites() {
@@ -132,13 +106,6 @@ function bibdk_openuserstatus_get_favourites() {
  * @return null|string
  */
 function bibdk_openuserstatus_get_agencyname($agencyId) {
-  $client = new ting_client_class();
-  $response = $client->do_request('agency', array('agencyId' => $agencyId, 'action' => 'findLibraryRequest'));
-  if (isset($response->findLibraryResponse->pickupAgency)) {
-    $agency = $response->findLibraryResponse->pickupAgency[0];
-    return $agency->agencyName->{'$'};
-  }
-  else {
-    return t('agencyname_not_found', array(), array('context' => 'bibdk_openuserstatus'));
-  }
+  $agency = new TingAgency($agencyId);
+  return isset($agency->getBranch()->branchName) ? $agency->getBranch()->branchName : NULL;
 }
