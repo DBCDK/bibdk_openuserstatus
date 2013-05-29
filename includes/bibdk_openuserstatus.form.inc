@@ -359,7 +359,8 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
 
-  return bibdk_openuserstatus_get_readyforpickup_table($form, $data);
+  $form = bibdk_openuserstatus_get_readyforpickup_table($form, $data);
+  return $form;
 }
 
 /**
@@ -426,7 +427,8 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
 
   $data['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
 
-  return bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
+  $form = bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
+  return $form;
 }
 
 /**

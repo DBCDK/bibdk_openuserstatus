@@ -94,6 +94,7 @@ function bibdk_openuserstatus_get_favourites() {
       _bibdk_favourite_set_agencies();
     }
     $favourites = isset($_SESSION['bibdk_favourites']) ? $_SESSION['bibdk_favourites'] : NULL;
+    debug($favourites);
     foreach ($favourites as $favourite) {
       $ret[] = unserialize($favourite);
     }

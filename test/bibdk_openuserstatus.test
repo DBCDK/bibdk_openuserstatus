@@ -25,11 +25,18 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   public function testRunner(){
     $this->response = unserialize($this->_loadFile('response.serialized'));
 
-    //TODO XXX re-enable disabled tests
     $this->test_bibdk_opensuser_get_basic_information();
-    $this->test_bibdk_openuserstatus_get_reservations();
     $this->test_bibdk_openuserstatus_get_loans();
     $this->test_bibdk_openuserstatus_get_loaned_items();
+    $this->test_bibdk_openuserstatus_get_loans_table();
+
+    $this->test_bibdk_openuserstatus_get_reservations();
+
+    $this->test_bibdk_openuserstatus_get_ready_for_pickup_materials();
+    $this->test_bibdk_openuserstatus_get_reservations_readyforpickup_table();
+
+    $this->test_bibdk_openuserstatus_get_fiscals();
+    $this->test_bibdk_openuserstatus_get_fiscal_materials();
   }
 
   private function test_bibdk_opensuser_get_basic_information(){
@@ -37,20 +44,16 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $form = bibdk_opensuser_get_basic_information($form);
 
     $this->assertTrue(is_array($form), 'Array correctly returned');
-    $this->assertTrue(array_key_exists('basics', $form), 'Array contains #type key');
+    $this->assertTrue(array_key_exists('basics', $form), 'Array contains basics key');
+
     $form = $form['basics'];
+
     $this->assertTrue(array_key_exists('#type', $form), 'Array contains #type key');
     $this->assertTrue(!empty($form['#type']), '#type has content');
     $this->assertTrue(array_key_exists('#markup', $form), 'Array contains #markup key');
     $this->assertTrue(!empty($form['#markup']), '#type has content');
   }
   
-  private function test_bibdk_openuserstatus_get_reservations() {
-    $reservations = bibdk_openuserstatus_get_reservations($this->response);
-
-    $this->assertTrue(is_array($reservations), 'Array correctly returned');
-    $this->assertEqual(count($reservations), 5, 'Size of array seems right: 5');
-  }
 
   private function test_bibdk_openuserstatus_get_loans() {
     $loans = bibdk_openuserstatus_get_loans($this->response);
@@ -59,13 +62,14 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertEqual($count, 4, t('Size of array seems right: should be: %right was %was', array('%right' => '4', '%was' => $count)));
   }
 
-  function test_bibdk_openuserstatus_get_loaned_items() {
-    debug('If the previous test fails this will fail as well');
+  private function test_bibdk_openuserstatus_get_loaned_items() {
     $loans = bibdk_openuserstatus_get_loans($this->response);
     $items = bibdk_openuserstatus_get_loaned_items($loans);
+
     $this->assertTrue(is_array($items), 'Array correctly returned');
     $count = count($items);
     $this->assertEqual($count, 4, t('Size of array seems right: should be: %right was %was', array('%right' => '4', '%was' => $count)));
+
     foreach ($items as $item) {
       $this->assertTrue(is_array($item), 'Item is of type array');
       $this->assertTrue(array_key_exists('material', $item), '\'material\' key exsists');
@@ -74,9 +78,103 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     }
   }
 
+  private function test_bibdk_openuserstatus_get_loans_table() {
+    $form = array();
+    $form = bibdk_openuserstatus_get_loans_table($form, $this->response);
+
+    $this->assertTrue(is_array($form['loans']), 'Array correctly returned wrapped in a \'loans\' key');
+
+    $loans = $form['loans'];
+
+    $this->assertTrue((is_array($loans['loans_name']) && is_array($loans['loans_table']) && is_array($loans['loans_renew_all']) &&  is_array($loans['loans_renew_marked'])), 'The present keys seems to be alright');
+    $this->assertTrue(strstr($loans['loans_name']['#markup'], '<span>(4)</span>'), 'Number of items seems to be correctly wrapped in a span element');
+  }
+
+  private function test_bibdk_openuserstatus_get_reservations() {
+    $reservations = bibdk_openuserstatus_get_reservations($this->response);
+
+    $this->assertTrue(is_array($reservations), 'Array correctly returned');
+    $this->assertEqual(count($reservations), 5, 'Size of array seems right: 5');
+
+    $inProcessCount = 0;
+    $readyForPickupCount = 0;
+
+    foreach ($reservations as $reservation) {
+      if($reservation['orderStatus'] == 'In process'){
+        $inProcessCount++;
+      }
+
+      if($reservation['orderStatus'] == 'Available for pickup'){
+        $readyForPickupCount++;
+      }
+    }
+
+    $this->assertEqual($inProcessCount, 2, 'Correct amount of materials in process found');
+    $this->assertEqual($readyForPickupCount, 3, 'Correct amount of materials ready for pickup found');
+  }
+
+  private function test_bibdk_openuserstatus_materials_in_process() {
+    $reservations = bibdk_openuserstatus_get_reservations($this->response);
+    $items = bibdk_openuserstatus_materials_in_process($reservations);
+
+    $this->assertTrue(is_array($items), 'Got array in return');
+
+    $this->assertEqual(count($items), 2, 'Found 2 materials in array');
+    $keys = (array_key_exists('material', $items[0]) && array_key_exists('library', $items[0]) && array_key_exists('pickup_date', $items[0]) && array_key_exists('pickup_id', $items[0]));
+    $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
+  }
+
+  private function test_bibdk_openuserstatus_get_ready_for_pickup_materials() {
+    $reservatiions = bibdk_openuserstatus_get_reservations($this->response);
+    $items = bibdk_openuserstatus_get_ready_for_pickup_materials($reservatiions);
+
+    $this->assertTrue(is_array($items), 'Got array in return');
+
+    $this->assertEqual(count($items), 3, 'Found 3 materials in array');
+    $keys = (array_key_exists('material', $items[0]) && array_key_exists('library', $items[0]) && array_key_exists('pickup_date', $items[0]) && array_key_exists('pickup_id', $items[0]));
+    $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
+  }
+
+  private function test_bibdk_openuserstatus_get_reservations_readyforpickup_table() {
+    $form = array();
+    $reservations = bibdk_openuserstatus_get_reservations($this->response);
+    $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
+
+    $this->assertTrue(is_array($form), 'Array correctly returned');
+    $this->assertTrue(array_key_exists('readyforpickup', $form), 'Array contains readyforpickup key');
+
+    $readyForPickup = $form['readyforpickup'];
+
+    $this->assertTrue(array_key_exists('readyforpickup_name', $readyForPickup), 'Array contains readyforpickup_name key');
+    $this->assertTrue(array_key_exists('#type', $readyForPickup['readyforpickup_name']), 'key \'#type\' exists');
+    $this->assertTrue(array_key_exists('#markup', $readyForPickup['readyforpickup_name']), 'key \'#markup\' exists');
+
+    $this->assertTrue(array_key_exists('readyforpickup_table', $readyForPickup), 'Array contains readyforpickup_table key');
+    $this->assertTrue(array_key_exists('#type', $readyForPickup['readyforpickup_table']), 'key \'#type\' exists');
+    $this->assertTrue(array_key_exists('#markup', $readyForPickup['readyforpickup_table']), 'key \'#markup\' exists');
+    $this->assertTrue(!empty($readyForPickup['readyforpickup_table']['#markup']), '\'#markup\' is not empty');
+  }
+
+  private function test_bibdk_openuserstatus_get_fiscals() {
+    $items = bibdk_openuserstatus_get_fiscals($this->response);
+    $this->assertTrue(is_array($items), 'Got array in return');
+    $this->assertEqual(count($items), 2, 'Found 2 materials in array');
+  }
+  
+  private function test_bibdk_openuserstatus_get_fiscal_materials() {
+    $fiscals = bibdk_openuserstatus_get_fiscals($this->response);
+    $items = bibdk_openuserstatus_get_fiscal_materials($fiscals);
+
+    $this->assertTrue(is_array($items), 'Got array in return');
+
+    $this->assertEqual(count($items), 2, 'Found 2 materials in array');
+    $keys = (array_key_exists('material', $items[0]) && array_key_exists('type', $items[0]) && array_key_exists('date', $items[0]) && array_key_exists('amount', $items[0]));
+    $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
+  }
+
   /**
    * @param $filename
-   * @return string
+   * @return mixed
    */
   private function _loadFile($filename) {
     return file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/' . $filename);
