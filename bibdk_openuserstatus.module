@@ -27,7 +27,7 @@ function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
  * Implements hook_theme().
  * @return array
  */
-function bibdk_openuserstatus_theme(){
+function bibdk_openuserstatus_theme() {
   return array(
     'bibdk_openuserstatus' => array(
       'template' => 'theme/bibdk_openuserstatus',
@@ -45,17 +45,17 @@ function bibdk_openuserstatus_request() {
     return array();
   }
   $ret = array();
-  foreach ($favourites as $favourite) {    
+  foreach ($favourites as $favourite) {
     $res = $favourite->getUserStatus();
-    
+
     if ($res === FALSE) {
       continue;
     }
-    
-    if (isset($res['error'])) {      
-      $ret[$favourite->getAgencyId()] = new UserStatusResponse(NULL,$res['error']);
+
+    if (isset($res['error'])) {
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse(NULL, $res['error']);
     }
-    else{
+    else {
       $ret[$favourite->getAgencyId()] = new UserStatusResponse($res['response']);
     }
   }
@@ -82,11 +82,17 @@ function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
   // instead of updating the whole thing ??
   // if we add an order from the data available, some elements will not be set
   // and a refresh button is probably needed
-  if( isset($_SESSION['userStatus'][$library])){
+  if (isset($_SESSION['userStatus'][$library])) {
     unset($_SESSION['userStatus'][$library]);
   }
 }
 
+/**
+ *
+ *
+ * @internal TingAgency $fav
+ * @return mixed
+ */
 function bibdk_openuserstatus_get_favourites() {
   static $ret;
   if (!isset($ret)) {
@@ -95,7 +101,8 @@ function bibdk_openuserstatus_get_favourites() {
     }
     $favourites = isset($_SESSION['bibdk_favourites']) ? $_SESSION['bibdk_favourites'] : NULL;
     foreach ($favourites as $favourite) {
-      $ret[] = unserialize($favourite);
+      $fav = unserialize($favourite);
+      $ret[$fav->getAgencyId()] = $fav;
     }
   }
   return $ret;
@@ -108,4 +115,61 @@ function bibdk_openuserstatus_get_favourites() {
 function bibdk_openuserstatus_get_agencyname($agencyId) {
   $agency = new TingAgency($agencyId);
   return isset($agency->getBranch()->branchName) ? $agency->getBranch()->branchName : NULL;
+}
+
+/**
+ * Gets favourite libraries for the current user
+ * Returns empty array if zero libraries are found
+ *
+ * @return array
+ */
+function bibdk_openuserstatus_get_favourites_array() {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  $arr = array();
+  foreach ($favourites as $favourite) {
+    $arr['DK-' . $favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+  }
+  return $arr;
+}
+
+/**
+ * Submit function handling submission triggered by the delete selected in the
+ * reservations in process table.
+ * Collects the sleceted and orderids and groups them buy associated agencyid
+ *
+ * @param $form
+ * @param $form_state
+ */
+function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
+  $values = $form_state['values']['reservations_table'];
+  $cancellations = array();
+  foreach ($values as $value) {
+    if (!empty($value)) {
+      $ids = explode(';', $value);
+      $orderId = $ids[0];
+      $agencyId = $ids[1];
+      $cancellations[$agencyId][] = $orderId;
+    }
+  }
+  bibdk_openuserstatus_cancel_reservations($cancellations);
+}
+
+/**
+ * Requesting cancelation of orderids in $cancellations array
+ *
+ * @param array $cancellations
+ */
+function bibdk_openuserstatus_cancel_reservations($cancellations) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  foreach ($cancellations as $agencyId => $orderIds) {
+    if (array_key_exists($agencyId, $favourites)) {
+      $resp = $favourites[$agencyId]->cancelOrder($orderIds);
+      if (isset($resp['error']) && !empty($resp['error'])) {
+        drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus')), 'error');
+      }
+      else {
+        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'notice');
+      }
+    }
+  }
 }

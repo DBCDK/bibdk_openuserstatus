@@ -251,30 +251,15 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
   foreach ($reservations as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process') {
       $item = array();
-      $orderId = $reservation['orderId'];
+      $id = $reservation['orderId'] . ';' . $reservation['agencyId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation['pickUpAgency']));
+      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation['agencyId']));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
-      $items[$orderId] = $item;
+      $items[$id] = $item;
     }
   }
   return $items;
-}
-
-/**
- * Gets favourite libraries for the current user
- * Returns empty array if zero libraries are found
- *
- * @return array
- */
-function bibdk_openuserstatus_get_favourites_array() {
-  $favourites = bibdk_openuserstatus_get_favourites();
-  $arr = array();
-  foreach ($favourites as $favourite) {
-    $arr['DK-' . $favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
-  }
-  return $arr;
 }
 
 /**
@@ -291,7 +276,7 @@ function bibdk_openuserstatus_select($form, &$form_state, $lib, $default) {
   $form['select'] = array(
     '#type' => 'select',
     '#options' => $lib,
-    '#default_value' => $default,
+    '#default_value' => 'DK-' . $default,
   );
   return $form;
 }
@@ -331,18 +316,10 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
     $form['reservations']['reservations_delete'] = array(
       '#type' => 'submit',
       '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_delete_selected'),
+      '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
     );
   }
   return $form;
-}
-
-/**
- * @param $form
- * @param $form_state
- */
-function bibdk_openuserstatus_delete_selected($form, &$form_state) {
-  dpm($form_state, 'bibdk_openuserstatus_delete_selected');
 }
 
 /**
