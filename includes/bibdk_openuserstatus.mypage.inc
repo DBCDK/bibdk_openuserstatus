@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * Implements hook_bibdk_mypage_tabs().
+ */
+function bibdk_openuserstatus_bibdk_mypage_tabs($max_rows = 3) {
+
+  global $user;
+
+  $form['bibdk_openuserstatus'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+    '#theme' => 'bibdk_mypage-form',
+    '#attributes' => array('class' => array('element-wrapper', 'bibdk-mypage-wrapper')),
+  );
+
+  $form['bibdk_openuserstatus']['header'] = array(
+    '#type' => 'markup',
+    '#markup' => t('Userstatus'),
+  );
+
+  $form['bibdk_openuserstatus']['rows'] = array(
+    '#type' => 'fieldset',
+    '#tree' => TRUE,
+  );
+
+  //$cart = BibdkCart::getAll();
+  //bibdk_cart_set_manifestations($cart);
+
+  // @TODO check if any favourites.
+  // if any make an ajax call
+  /*if (sizeof($cart) > 0) {
+    $cart = array_slice($cart, 0, $max_rows);
+    foreach ($cart as $id => $item) {
+      $form['bibdk_cart']['rows'][$id] = array(
+        'label_row' => array(
+          '#type' => 'markup',
+          '#markup' => isset($item->manifestation) ? $item->manifestation->getTitle() : '',
+        ),
+        'value_row' => array(
+          '#type' => 'markup',
+          '#markup' => '',
+        ),
+      );
+    }
+  }*/
+ // else {
+    $form['bibdk_openuserstatus']['rows'][] = array(
+      'item_row' => array(
+        '#type' => 'markup',
+        '#markup' => t('No loans or reservations'),
+      ),
+    );
+ // }
+
+  $form['bibdk_openuserstatus']['link_profile2_tab'] = array(
+    '#type' => 'link',
+    '#title' => t('Go to userstatus'),
+    '#title_display' => 'invisible',
+    '#href' => 'user/' . $user->uid . '/edit/bibdk_openuserstatus',
+    '#options' => array('attributes' => array('title' => t('Go to userstatus'))),
+  );
+
+  return $form;
+}
+
+
+?>
