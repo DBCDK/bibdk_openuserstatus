@@ -263,6 +263,9 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
 }
 
 /**
+ * Gets favourite libraries for the current user
+ * Returns empty array if zero libraries are found
+ *
  * @return array
  */
 function bibdk_openuserstatus_get_favourites_array() {
@@ -294,9 +297,11 @@ function bibdk_openuserstatus_select($form, &$form_state, $lib, $default) {
 }
 
 /**
- * @param $form
- * @param $data
- * @return mixed
+ * Returns the form array with the reserved items attached
+ *
+ * @param array $form
+ * @param array $data
+ * @return array $form
  */
 function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
   $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
@@ -341,9 +346,11 @@ function bibdk_openuserstatus_delete_selected($form, &$form_state) {
 }
 
 /**
- * @param $form
- * @param $reservations
- * @return mixed
+ * Creates the necessary items and header arrays for the reservations tableselect form
+ *
+ * @param array $form
+ * @param array $reservations
+ * @return array $form
  */
 function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations) {
   $data['items'] = array();
@@ -364,9 +371,11 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
 }
 
 /**
- * @param $form
- * @param $data
- * @return mixed
+ * Returns form array representing the ready for pickup table
+ *
+ * @param array $form
+ * @param array $data
+ * @return array $form
  */
 function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
@@ -432,9 +441,11 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
 }
 
 /**
- * @param $form
- * @param $data
- * @return mixed
+ * Returns form array representing the fiscal account table
+ *
+ * @param array $form
+ * @param array $data
+ * @return array $form
  */
 function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
@@ -456,8 +467,11 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
 }
 
 /**
- * @param $response
- * @return string
+ * Extracts the currently fiscal items from each favourite library and collects
+ * them into a single array for easier parsing
+ *
+ * @param array $response
+ * @return array $loans
  */
 function bibdk_openuserstatus_get_fiscals($response) {
   $fiscals = array();
@@ -476,8 +490,10 @@ function bibdk_openuserstatus_get_fiscals($response) {
 }
 
 /**
- * @param $res
- * @return array
+ * Creates the items array to be used in the fiscal account table form
+ *
+ * @param array $res
+ * @return array $items
  */
 function bibdk_openuserstatus_get_fiscal_materials($res) {
   $items = array();
