@@ -42,6 +42,8 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
  * @return bool
  */
 function bibdk_openuserstatus_validate_selection() {
+  $userstatus = bibdk_openuserstatus_request();
+  fb($userstatus);
   //TODO complete this validation. Validate against current userstatus
   return TRUE;
 }

@@ -165,6 +165,7 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
       $cancellations[$agencyId][] = $orderId;
     }
   }
+  dpm($cancellations);
   bibdk_openuserstatus_cancel_reservations($cancellations);
 }
 
