@@ -31,6 +31,10 @@ function bibdk_openuserstatus_get_tables($form, $response) {
 
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
 
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'bibdk_openuserstatus') . '/js/bibdk_openuserstatus.js',
+  );
+
   return $form;
 }
 
@@ -253,7 +257,7 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
       $item = array();
       $id = $reservation['orderId'] . ';' . $reservation['agencyId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation['agencyId']));
+      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
       $items[$id] = $item;
@@ -269,14 +273,22 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  * @param $form
  * @param $form_state
  * @param $lib
- * @param $default
- * @return array
+ * @param $item
+ * @return array $form
  */
-function bibdk_openuserstatus_select($form, &$form_state, $lib, $default) {
+function bibdk_openuserstatus_select($form, &$form_state, $lib, $item) {
   $form['select'] = array(
     '#type' => 'select',
     '#options' => $lib,
-    '#default_value' => 'DK-' . $default,
+    '#default_value' => 'DK-' . $item['agencyId'],
+    '#attributes' => array(
+      'data-oid' => array(
+        $item['orderId'],
+      ),
+      'data-caid' => array(
+        $item['agencyId'],
+      ),
+    ),
   );
   return $form;
 }

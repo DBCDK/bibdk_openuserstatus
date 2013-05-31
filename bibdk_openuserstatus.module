@@ -1,5 +1,19 @@
 <?php
 module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
+
+/**
+ * Implements hook_menu.
+ */
+function bibdk_openuserstatus_menu() {
+  $items['userstatus/pickuplib'] = array(
+    'page callback' => 'bibdk_openuserstatus_new_pickuplibrary_selected',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/bibdk_userstatus.ajax.inc',
+  );
+  return $items;
+}
+
 /**
  * Impelements user_profile_tabs (
  * @see ding_user.module)
