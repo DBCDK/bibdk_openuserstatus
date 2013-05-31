@@ -141,7 +141,7 @@ function bibdk_openuserstatus_get_favourites_array() {
   $favourites = bibdk_openuserstatus_get_favourites();
   $arr = array();
   foreach ($favourites as $favourite) {
-    $arr['DK-' . $favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
   }
   return $arr;
 }
@@ -165,7 +165,6 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
       $cancellations[$agencyId][] = $orderId;
     }
   }
-  dpm($cancellations);
   bibdk_openuserstatus_cancel_reservations($cancellations);
 }
 

@@ -277,10 +277,11 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  * @return array $form
  */
 function bibdk_openuserstatus_select($form, &$form_state, $lib, $item) {
+  dpm($lib);
   $form['select'] = array(
     '#type' => 'select',
     '#options' => $lib,
-    '#default_value' => 'DK-' . $item['agencyId'],
+    '#default_value' => $item['agencyId'],
     '#attributes' => array(
       'data-oid' => array(
         $item['orderId'],

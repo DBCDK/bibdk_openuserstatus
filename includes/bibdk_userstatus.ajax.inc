@@ -15,15 +15,15 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
   $agencyId = $post['aid'];
   $currentAgencyId = $post['caid'];
 
-  if(!bibdk_openuserstatus_validate_selection()){
+  if(!bibdk_openuserstatus_validate_selection($orderId, $currentAgencyId)){
     $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus'));
     bibdk_openuserstatus_output_error($msg);
   }
 
   $order = array();
-  $order['orderId'] = $orderId;
-  $order['pickupAgency'] = $agencyId;
-  $order['agencyId'] = $currentAgencyId;
+  $order[0]['orderId'] = $orderId;
+  $order[0]['pickupAgency'] = $agencyId;
+  $order[0]['agencyId'] = $currentAgencyId;
 
   $favourites = bibdk_openuserstatus_get_favourites();
   if(isset($favourites[$currentAgencyId])){
@@ -33,19 +33,31 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     bibdk_openuserstatus_output_error($msg);
   }
 
+  fb($order, 'order');
   $resp = $favourite->updateOrder($order);
   fb($resp);
   return drupal_json_output('hest');
 }
 
 /**
+ * Validates that the request information is present in the curren userstatus
+ * and ensures that the user haven't faked the input
+ *
+ * @param $orderId
+ * @param $currentAgencyId
  * @return bool
  */
-function bibdk_openuserstatus_validate_selection() {
+function bibdk_openuserstatus_validate_selection($orderId, $currentAgencyId) {
   $userstatus = bibdk_openuserstatus_request();
-  fb($userstatus);
-  //TODO complete this validation. Validate against current userstatus
-  return TRUE;
+  $reservations = bibdk_openuserstatus_get_reservations($userstatus);
+  foreach ($reservations as $reservation) {
+    if($reservation['orderId'] == $orderId){
+      if($reservation['agencyId'] == $currentAgencyId){
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
 }
 
 /**
