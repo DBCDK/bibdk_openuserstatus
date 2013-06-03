@@ -137,11 +137,11 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
   foreach ($loans as $material) {
     $item = array();
-    $loanId = $material['loanId'];
+    $id = $material['loanId'] . ';' . $material['agencyId'];
     $item['material'] = $material['author'] . ': ' . $material['title'];
     $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
     $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
-    $items[$loanId] = $item;
+    $items[$id] = $item;
   }
   return $items;
 }
@@ -178,30 +178,20 @@ function bibdk_openuserstatus_get_loans_table_form($form, $data) {
   );
 
   if (!empty($data['items'])) {
-    $form['loans']['loans_renew_all'] = array(
-      '#type' => 'submit',
-      '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
-    );
-
     $form['loans']['loans_renew_marked'] = array(
       '#type' => 'submit',
       '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
       '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
     );
+
+    $form['loans']['loans_renew_all'] = array(
+      '#type' => 'submit',
+      '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
+      '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
+    );
   }
 
   return $form;
-}
-
-/**
- * Handles the form submission when the renew_marked button is hit
- *
- * @param array $form
- * @param array $form_state
- */
-function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
-  dpm($form_state, 'bibdk_openuserstatus_renew_marked_submit');
 }
 
 /**
@@ -212,6 +202,7 @@ function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
  */
 function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
   dpm($form_state, 'bibdk_openuserstatus_renew_all_submit');
+  dpm($_SESSION);
 }
 
 /**
@@ -335,7 +326,7 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
       '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
     );
   }
- return $form;
+  return $form;
 }
 
 /**

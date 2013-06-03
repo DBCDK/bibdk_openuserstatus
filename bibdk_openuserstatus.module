@@ -150,6 +150,7 @@ function bibdk_openuserstatus_get_favourites_array() {
  * Gets favourite libraries for the current user
  * Returns empty array if zero libraries are found
  *
+ * @param string $agencyId
  * @return array
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
@@ -161,6 +162,47 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
     $arr[$branch->branchId] = $branch->branchName;
   }
   return $arr;
+}
+
+/**
+ * Handles the form submission when the renew_marked button is hit
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
+  $values = $form_state['values']['loans_table'];
+  $loans = array();
+  foreach ($values as $value) {
+    if (!empty($value)) {
+      $ids = explode(';', $value);
+      $loanId = $ids[0];
+      $agencyId = $ids[1];
+      $loans[$agencyId][]['loanId'] = $loanId;
+    }
+  }
+  bibdk_openuserstatus_renew_loans($loans);
+}
+
+/**
+ * Requesting renewal of loanids in $loans array
+ *
+ * @param $loans
+ */
+function bibdk_openuserstatus_renew_loans($loans) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  foreach ($loans as $agencyId => $loanIds) {
+    if (array_key_exists($agencyId, $favourites)) {
+      $resp = $favourites[$agencyId]->renewLoan($loanIds);
+      dpm($resp, 'resp');
+      if (isset($resp['renewLoanError']) && !empty($resp['renewLoanError'])) {
+        drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus:error')), 'error');
+      }
+      else {
+        drupal_set_message(t('Your order(s) was successfully renewed', array(), array('context' => 'bibdk_openuserstatus')), 'notice');
+      }
+    }
+  }
 }
 
 /**
@@ -196,7 +238,7 @@ function bibdk_openuserstatus_cancel_reservations($cancellations) {
     if (array_key_exists($agencyId, $favourites)) {
       $resp = $favourites[$agencyId]->cancelOrder($orderIds);
       if (isset($resp['error']) && !empty($resp['error'])) {
-        drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus')), 'error');
+        drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus:error')), 'error');
       }
       else {
         drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'notice');

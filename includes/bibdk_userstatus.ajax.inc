@@ -22,7 +22,7 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
 
   $order = array();
   $order[0]['orderId'] = $orderId;
-  $order[0]['pickUpAgency'] = $agencyId;
+  $order[0]['pickUpAgency'] = 'DK-' . $agencyId;
   $order[0]['agencyId'] = $currentAgencyId;
 
   $favourites = bibdk_openuserstatus_get_favourites();
@@ -33,9 +33,11 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     bibdk_openuserstatus_output_error($msg);
   }
 
+
   $resp = $favourite->updateOrder($order);
+  //TODO XXX check if god or bad stuff it returned from webservice
   fb($resp, 'resp');
-  //TODO do check on response
+
 
   return drupal_json_output('success');
 }
