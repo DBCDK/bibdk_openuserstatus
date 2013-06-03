@@ -1,4 +1,5 @@
 (function($) {
+    //var element = '';
     Drupal.changePickupLib = function(element) {
 
         var oid = element.data('oid');
@@ -18,13 +19,15 @@
                 caid: caid
             },
             dataType: 'json',
-            success: Drupal.userstatusResponse
+            success: function(data){
+                Drupal.userstatusResponse(data);
+                Drupal.removeThrobber(element);
+                Drupal.activateSelects();
+            }
         });
     };
 
     Drupal.userstatusResponse = function(data) {
-        console.log(data);
-
         if(data.error) {
             var error = data.error;
             alert(error.msg);
@@ -32,28 +35,32 @@
     };
 
     Drupal.addThrobber = function(element) {
-        $(element).addClass('ajax-progress');
-        $(element).html('<span class="throbber">&nbsp;</span>');
+        $(element).toggleClass('visuallyhidden');
+        $(element).parent().append('<span class="throbber">&nbsp;</span>');
     };
 
 
     Drupal.removeThrobber = function(element) {
-
+        $('span[class="throbber"]').remove();
+        $(element).toggleClass('visuallyhidden');
     };
 
     Drupal.deactivateSelects = function(){
-
-    }
+        $('.form-select').attr('disabled', true);
+        $('#edit-reservations-delete').attr('disabled', true);
+    };
 
     Drupal.activateSelects = function() {
-
-    }
+        $('.form-select').attr('disabled', false);
+        $('#edit-reservations-delete').attr('disabled', false);
+    };
 
     Drupal.behaviors.userstatus = {
         attach: function(context) {
             $('.form-select', context).change(function() {
                 var element = $(this);
-                //Drupal.addThrobber(element);
+                Drupal.deactivateSelects();
+                Drupal.addThrobber(element);
                 Drupal.changePickupLib(element);
             });
         }

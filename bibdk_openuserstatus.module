@@ -147,6 +147,23 @@ function bibdk_openuserstatus_get_favourites_array() {
 }
 
 /**
+ * Gets favourite libraries for the current user
+ * Returns empty array if zero libraries are found
+ *
+ * @return array
+ */
+function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
+
+  $arr = array();
+  foreach ($pickUpAgencies as $branch) {
+    $arr[$branch->branchId] = $branch->branchName;
+  }
+  return $arr;
+}
+
+/**
  * Submit function handling submission triggered by the delete selected in the
  * reservations in process table.
  * Collects the sleceted and orderids and groups them buy associated agencyid

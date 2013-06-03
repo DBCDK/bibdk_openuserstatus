@@ -249,15 +249,16 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
  * @return array $items
  */
 function bibdk_openuserstatus_materials_in_process($reservations) {
-  $favourites = bibdk_openuserstatus_get_favourites_array();
-
   $items = array();
   foreach ($reservations as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'In process') {
+
+      $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
+
       $item = array();
       $id = $reservation['orderId'] . ';' . $reservation['agencyId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
-      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $favourites, $reservation));
+      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = $reservation['holdQueuePosition'];
       $items[$id] = $item;
@@ -276,18 +277,18 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  * @param $item
  * @return array $form
  */
-function bibdk_openuserstatus_select($form, &$form_state, $lib, $item) {
-  dpm($lib);
+function bibdk_openuserstatus_select($form, &$form_state, $pcikUpAgencies, $reservation) {
+  #dpm($pcikUpAgencies);
   $form['select'] = array(
     '#type' => 'select',
-    '#options' => $lib,
-    '#default_value' => $item['agencyId'],
+    '#options' => $pcikUpAgencies,
+    '#default_value' => $reservation['agencyId'],
     '#attributes' => array(
       'data-oid' => array(
-        $item['orderId'],
+        $reservation['orderId'],
       ),
       'data-caid' => array(
-        $item['agencyId'],
+        $reservation['agencyId'],
       ),
     ),
   );
@@ -321,7 +322,9 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
     '#sticky' => FALSE,
     '#multiple' => TRUE,
     '#attributes' => array(
-      'class' => array(),
+      'class' => array(
+        'ajax-progress'
+      ),
     ),
   );
 
@@ -332,7 +335,7 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
       '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
     );
   }
-  return $form;
+ return $form;
 }
 
 /**
