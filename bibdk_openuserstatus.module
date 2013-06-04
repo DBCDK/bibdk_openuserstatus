@@ -301,9 +301,11 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
     if($orderId){
       $material = bibdk_openuserstatus_get_reservation($orderId, $reservations);
       $agencyId = $material['agencyId'];
-
-      $cancellations[$agencyId][]['orderId'] = $orderId;
-      $cancellations[$agencyId][]['orderType'] = $material['orderType'];
+      $order = array(
+        'orderId' => $orderId,
+        'orderType' => $material['orderType'],
+      );
+      $cancellations[$agencyId][] = $order;
     }
   }
   bibdk_openuserstatus_cancel_reservations($cancellations);
