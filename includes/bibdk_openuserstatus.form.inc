@@ -195,17 +195,6 @@ function bibdk_openuserstatus_get_loans_table_form($form, $data) {
 }
 
 /**
- * Handles the form submission when the renew_all button is hit
- *
- * @param $form
- * @param $form_state
- */
-function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
-  dpm($form_state, 'bibdk_openuserstatus_renew_all_submit');
-  dpm($_SESSION);
-}
-
-/**
  * Creates the necessary items and header arrays for the ready_for_pickup table form
  *
  * @param array $form
