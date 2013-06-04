@@ -11,14 +11,14 @@ function bibdk_openuserstatus_menu() {
     'page callback' => 'bibdk_openuserstatus_new_pickuplibrary_selected',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/bibdk_userstatus.ajax.inc',
+    'file' => 'includes/bibdk_openuserstatus.ajax.inc',
   );
   
   $items['openuserstatus/getuserstatus'] = array(
     'page callback' => 'bibdk_openuserstatus_get_user_status',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
-    'file' => 'includes/bibdk_userstatus.ajax.inc',
+    'file' => 'includes/bibdk_openuserstatus.ajax.inc',
   );
   
   return $items;
@@ -257,8 +257,10 @@ function bibdk_openuserstatus_parse_response($response) {
 }
 
 /**
- * @param $loanId
- * @param $loanedItems
+ * Finds the loan with $loanId and returns the loan
+ *
+ * @param String $loanId
+ * @param array $loanedItems
  * @return array
  */
 function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
@@ -270,6 +272,12 @@ function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
   return array();
 }
 
+/**
+ * Displays appropriate messages to the user depending on result from webservice
+ *
+ * @param array $error
+ * @param array $succes
+ */
 function bibdk_openuserstatus_set_messages($error, $succes) {
   foreach ($error as $reason => $err) {
     if($reason == 'Item not renewable'){
@@ -287,8 +295,8 @@ function bibdk_openuserstatus_set_messages($error, $succes) {
  * reservations in process table.
  * Collects the sleceted and orderids and groups them buy associated agencyid
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
   $values = $form_state['values']['reservations_table'];
@@ -312,6 +320,8 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
 }
 
 /**
+ * Extracts reservations from userstatus object
+ *
  * @param $orderId
  * @param $reservations
  * @return array

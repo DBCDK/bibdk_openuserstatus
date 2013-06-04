@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * Class BibdkOpenuserstatusUnitTest
+ */
+class BibdkOpenuserstatusUnitTest extends DrupalUnitTestCase {
+
+  /**
+   * @return array
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Bibdk OpenUserstatus Unit Test'),
+      'description' => t('Unittest Bibdk OpenUserstatus'),
+      'group' => t('Bibliotek.dk - OpenUserstatus'),
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('bibdk_openuserstatus');
+  }
+
+  public function test_hest(){
+    module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.ajax');
+    $testarr = array();
+    $val = bibdk_openuserstatus_check_post_values($testarr);
+    $this->assertFalse($val, 'FALSE is returned on wrongly formatted array');
+    $testarr = array(
+      'aid' => 1,
+      'oid' => 2,
+      'caid' => 3,
+    );
+    $val = bibdk_openuserstatus_check_post_values($testarr);
+    $this->assertTrue($val, 'TRUE is returned on correctly formatted array');
+  }
+}

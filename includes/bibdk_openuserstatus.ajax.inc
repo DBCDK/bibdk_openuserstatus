@@ -5,7 +5,7 @@
  */
 function bibdk_openuserstatus_new_pickuplibrary_selected() {
   if (!isset($_POST) && empty($_POST) || !bibdk_openuserstatus_check_post_values($_POST)) {
-    $msg = t('insufficient_data_provided', array(), array('context' => 'bibdk_openuserstatus'));
+    $msg = t('insufficient_data_provided', array(), array('context' => 'bibdk_openuserstatus:error'));
     bibdk_openuserstatus_output_error($msg);
   }
 
@@ -16,7 +16,7 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
   $currentAgencyId = $post['caid'];
 
   if (!bibdk_openuserstatus_validate_selection($orderId, $currentAgencyId)) {
-    $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus'));
+    $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus:error'));
     bibdk_openuserstatus_output_error($msg);
   }
 
@@ -30,7 +30,7 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     $favourite = $favourites[$currentAgencyId];
   }
   else {
-    $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus'));
+    $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus:error'));
     bibdk_openuserstatus_output_error($msg);
   }
 
@@ -40,7 +40,8 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
   fb($resp, 'resp');
 
 
-  return drupal_json_output('success');
+  drupal_json_output('success');
+  exit(0);
 }
 
 /**
@@ -119,7 +120,7 @@ function bibdk_openuserstatus_get_user_status() {
   $data['html'] = bibdk_openuserstatus_set_rows_html($data);
 
   //echo $data['html'];
-  
+
  // print_r($data);
   drupal_json_output($data);
   exit(0);
