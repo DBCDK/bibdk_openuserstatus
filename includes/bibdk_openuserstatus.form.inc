@@ -253,8 +253,8 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  *
  * @param $form
  * @param $form_state
- * @param $lib
- * @param $item
+ * @param $pcikUpAgencies
+ * @param $reservation
  * @return array $form
  */
 function bibdk_openuserstatus_select($form, &$form_state, $pickUpAgencies, $reservation) {

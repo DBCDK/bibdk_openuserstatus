@@ -240,13 +240,11 @@ function bibdk_openuserstatus_parse_response($response) {
   }
 
   $response = $response['response']['renewLoanResponse']['renewLoanStatus'];
-
   $userstatus = bibdk_openuserstatus_request();
   $loanedItems = bibdk_openuserstatus_get_loans($userstatus);
 
   $error = array();
   $succes = array();
-
   foreach ($response as $item) {
     $material = bibdk_openuserstatus_get_material($item['loanId'], $loanedItems);
     if(isset($item['renewLoanError'])){
