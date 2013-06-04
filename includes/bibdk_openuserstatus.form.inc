@@ -236,7 +236,7 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
       $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
 
       $item = array();
-      $id = $reservation['orderId'] . ';' . $reservation['agencyId'];
+      $id = $reservation['orderId'];
       $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
       $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
@@ -253,7 +253,7 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  *
  * @param $form
  * @param $form_state
- * @param $pcikUpAgencies
+ * @param $pickUpAgencies
  * @param $reservation
  * @return array $form
  */
