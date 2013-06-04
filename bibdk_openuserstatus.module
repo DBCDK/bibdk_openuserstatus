@@ -1,5 +1,7 @@
 <?php
 module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
+module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.mypage');
+
 
 /**
  * Implements hook_menu.
@@ -11,6 +13,14 @@ function bibdk_openuserstatus_menu() {
     'type' => MENU_CALLBACK,
     'file' => 'includes/bibdk_userstatus.ajax.inc',
   );
+  
+  $items['openuserstatus/getuserstatus'] = array(
+    'page callback' => 'bibdk_openuserstatus_get_user_status',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/bibdk_userstatus.ajax.inc',
+  );
+  
   return $items;
 }
 
