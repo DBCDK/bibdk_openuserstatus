@@ -257,12 +257,15 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  * @param $item
  * @return array $form
  */
-function bibdk_openuserstatus_select($form, &$form_state, $pcikUpAgencies, $reservation) {
-  #dpm($pcikUpAgencies);
+function bibdk_openuserstatus_select($form, &$form_state, $pickUpAgencies, $reservation) {
+  $pickupAgency = $reservation['pickUpAgency'];
+  if(strpos($pickupAgency, 'DK-') === 0){
+    $pickupAgency = (int) substr($pickupAgency, 3, strlen($pickupAgency));
+  }
   $form['select'] = array(
     '#type' => 'select',
-    '#options' => $pcikUpAgencies,
-    '#default_value' => $reservation['agencyId'],
+    '#options' => $pickUpAgencies,
+    '#default_value' => $pickupAgency,
     '#attributes' => array(
       'data-oid' => array(
         $reservation['orderId'],
