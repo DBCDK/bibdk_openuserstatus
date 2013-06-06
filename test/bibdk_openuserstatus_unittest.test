@@ -67,6 +67,20 @@ class BibdkOpenuserstatusUnitTest extends DrupalUnitTestCase {
     $loanId = 4148698304;
     $test = bibdk_openuserstatus_get_material($loanId, $loanedItems);
     $this->assertTrue((!empty($test) && is_array($test)), 'Array with content returned on recognized loanId');
+    $this->assertTrue((array_key_exists('author', $test) && array_key_exists('title', $test)), 'The keys needed was found in the array');
+  }
+
+  public function test_bibdk_openuserstatus_get_reservation() {
+    $reservations = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus').'/test/mockup/reservations.json'));
+
+    $orderId = 1;
+    $test = bibdk_openuserstatus_get_reservation($orderId, $reservations);
+    $this->assertTrue((empty($test) && is_array($test)), 'Empty array returned on unrecognized loanId');
+
+    $orderId = 1343721;
+    $test = bibdk_openuserstatus_get_reservation($orderId, $reservations);
+    $this->assertTrue((!empty($test) && is_array($test)), 'Array with content returned on recognized loanId');
+    $this->assertTrue((array_key_exists('agencyId', $test) && array_key_exists('orderType', $test)), 'The keys needed was found in the array');
   }
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC METHODS **/
