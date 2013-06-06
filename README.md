@@ -6,4 +6,4 @@ loans, reservations ready for pickup, reservations in process and fiscal account
 
 ###### Dependencies
 This module depends on the presence of bibdk_favourite, ting_openuserstatus,
-ting_agency.
+ting_agency to provide full functionality.
