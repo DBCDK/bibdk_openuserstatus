@@ -253,7 +253,7 @@ function bibdk_openuserstatus_parse_response($response) {
       $succes[] = $material['author'] . ': ' . $material['title'];
     }
   }
-  bibdk_openuserstatus_set_messages($error, $succes);
+  bibdk_openuserstatus_renew_request_complete_set_messages($error, $succes);
 }
 
 /**
@@ -278,13 +278,12 @@ function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
  * @param array $error
  * @param array $succes
  */
-function bibdk_openuserstatus_set_messages($error, $succes) {
+function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succes) {
   foreach ($error as $reason => $err) {
     if($reason == 'Item not renewable'){
       drupal_set_message(t('The following items are not renewable: %materials', array('%materials' => implode(', ', $err)), array('context' => 'bibdk_openuserstatus:error')), 'error');
     }
   }
-
   if(count($succes) >= 1){
     drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'notice');
   }

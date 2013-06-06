@@ -19,8 +19,58 @@ class BibdkOpenuserstatusUnitTest extends DrupalUnitTestCase {
   public function setUp() {
     parent::setUp('bibdk_openuserstatus');
   }
+  /** TESTING BIBDK_OPENUSERSTATUS.MODULE METHODS **/
+  public function test_bibdk_openuserstatus_menu(){
+    $items = bibdk_openuserstatus_menu();
+    $this->assertEqual(count($items), 2, 'Two items returned');
+    $keys = array_keys($items);
+    $this->assertEqual($keys[0], 'userstatus/pickuplib', '$items[0] points to \'userstatus/pickuplib\'');
+    $this->assertEqual($keys[1], 'openuserstatus/getuserstatus', '$items[1] points to \'openuserstatus/getuserstatus\'');
 
-  public function test_hest(){
+    //Testing first item
+    $currentItem = $items['userstatus/pickuplib'];
+    $pageCallbackFirst = 'bibdk_openuserstatus_new_pickuplibrary_selected';
+    $fileName = 'bibdk_openuserstatus.ajax';
+
+    $this->assertEqual($currentItem['page callback'], $pageCallbackFirst, '\'userstatus/pickuplib\' has page call back to '.$pageCallbackFirst);
+    $this->assertEqual($currentItem['file'], 'includes/'.$fileName.'.inc', '\'userstatus/pickuplib\' includes file \'includes/'.$fileName.'.inc\'');
+
+    $functionExists = function_exists($pageCallbackFirst);
+    $this->assertFalse($functionExists, '\'includes/'.$fileName.'.inc\' is not yet loaded and the function '.$pageCallbackFirst.' is not found');
+
+    //Testing second item
+    $currentItem = $items['openuserstatus/getuserstatus'];
+    $pageCallbackSecond = 'bibdk_openuserstatus_get_user_status';
+
+    $this->assertEqual($currentItem['page callback'], $pageCallbackSecond, '\'openuserstatus/getuserstatus\' has page callback to '.$pageCallbackSecond);
+    $this->assertEqual($currentItem['file'], 'includes/'.$fileName.'.inc', '\'openuserstatus/getuserstatus\' includes file \'includes/'.$fileName.'.inc\'');
+
+    $functionExists = function_exists($pageCallbackSecond);
+    $this->assertFalse($functionExists, '\'includes/'.$fileName.'.inc\' is not yet loaded and the function '.$pageCallbackSecond.' is not found');
+
+    module_load_include('inc', 'bibdk_openuserstatus', 'includes/'.$fileName);
+
+    $functionExists = function_exists($pageCallbackFirst);
+    $this->assertTrue($functionExists, '\'includes/'.$fileName.'\' has been loaded and the function \'bibdk_openuserstatus_new_pickuplibrary_selected\' is found');
+
+    $functionExists = function_exists($pageCallbackSecond);
+    $this->assertTrue($functionExists, '\'includes/'.$fileName.'\' has been loaded and the function \'bibdk_openuserstatus_new_pickuplibrary_selected\' is found');
+  }
+
+  public function test_bibdk_openuserstatus_get_material() {
+    $loanedItems = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus').'/test/mockup/loanedItems.json'));
+
+    $loanId = 1;
+    $test = bibdk_openuserstatus_get_material($loanId, $loanedItems);
+    $this->assertTrue((empty($test) && is_array($test)), 'Empty array returned on unrecognized loanId');
+
+    $loanId = 4148698304;
+    $test = bibdk_openuserstatus_get_material($loanId, $loanedItems);
+    $this->assertTrue((!empty($test) && is_array($test)), 'Array with content returned on recognized loanId');
+  }
+
+  /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC METHODS **/
+  public function test_bibdk_openuserstatus_check_post_values(){
     module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.ajax');
     $testarr = array();
     $val = bibdk_openuserstatus_check_post_values($testarr);

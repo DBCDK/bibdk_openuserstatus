@@ -125,7 +125,7 @@ function bibdk_openuserstatus_get_user_status() {
   drupal_json_output($data);
   exit(0);
 }
-
+//TODO do this in a template
 function bibdk_openuserstatus_set_rows_html($data){
  $html = ''; 
  if (!empty($data)) {
