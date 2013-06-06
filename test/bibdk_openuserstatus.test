@@ -4,7 +4,11 @@
  * Class BibdkOpenuserstatusTest
  */
 class BibdkOpenuserstatusTest extends DrupalWebTestCase {
+
   private $response;
+  private $agencyId = '737600'; //Guldborgsund
+  private $userId = '0413392648'; //Guldborgsund
+  private $baseurl;
 
   /**
    * @return array
@@ -18,14 +22,22 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   public function setUp() {
-    parent::setUp('bibdk_openuserstatus', 'ting_agency');
+    parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup');
+
+    global $base_url;
+    $this->baseurl = $base_url;
+
     variable_set('agency_search_url', 'http://openagency.addi.dk/2.2/');
+    variable_set('openuserstatus_url', $this->baseurl . '/openuserstatus_webservice_mockup/renew');
   }
 
-  public function testRunner(){
+  public function testRunner() {
     $this->response = unserialize($this->_loadFile('response.serialized'));
 
-    //Testing bibdk_openuserstatus.ajax.inc
+    //TODO XXX re-enable tests prior to commit
+
+    //Testing bibdk_openuserstatus.ajax.inc -- unittest'ish
+    /*
     $this->test_bibdk_opensuser_get_basic_information();
     $this->test_bibdk_openuserstatus_get_loans();
     $this->test_bibdk_openuserstatus_get_loaned_items();
@@ -38,11 +50,22 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
     $this->test_bibdk_openuserstatus_get_fiscals();
     $this->test_bibdk_openuserstatus_get_fiscal_materials();
+    */
+
+    //Testing methods that includes webservice activity. All webservice activity has been mocked up
+    /** TESTING BIBDK_OPENUSERSTATUS.MODULE **/
+    $this->_setSession();
+    /*$this->test_bibdk_openuserstatus_get_favourites();
+    $this->test_bibdk_openuserstatus_request();
+    $this->test_bibdk_openuserstatus_get_agencyname();
+    $this->test_bibdk_openuserstatus_get_favourites_array();
+    $this->test_bibdk_openuserstatus_get_pickup_agencies();*/
+    $this->test_bibdk_openuserstatus_renew_marked_submit();
   }
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
 
-  private function test_bibdk_opensuser_get_basic_information(){
+  private function test_bibdk_opensuser_get_basic_information() {
     $form = array();
     $form = bibdk_opensuser_get_basic_information($form);
 
@@ -56,7 +79,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(array_key_exists('#markup', $form), 'Array contains #markup key');
     $this->assertTrue(!empty($form['#markup']), '#type has content');
   }
-  
+
 
   private function test_bibdk_openuserstatus_get_loans() {
     $loans = bibdk_openuserstatus_get_loans($this->response);
@@ -89,7 +112,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
     $loans = $form['loans'];
 
-    $this->assertTrue((is_array($loans['loans_name']) && is_array($loans['loans_table']) && is_array($loans['loans_renew_all']) &&  is_array($loans['loans_renew_marked'])), 'The present keys seems to be alright');
+    $this->assertTrue((is_array($loans['loans_name']) && is_array($loans['loans_table']) && is_array($loans['loans_renew_all']) && is_array($loans['loans_renew_marked'])), 'The present keys seems to be alright');
     $this->assertTrue(strstr($loans['loans_name']['#markup'], '<span>(4)</span>'), 'Number of items seems to be correctly wrapped in a span element');
   }
 
@@ -103,11 +126,11 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $readyForPickupCount = 0;
 
     foreach ($reservations as $reservation) {
-      if($reservation['orderStatus'] == 'In process'){
+      if ($reservation['orderStatus'] == 'In process') {
         $inProcessCount++;
       }
 
-      if($reservation['orderStatus'] == 'Available for pickup'){
+      if ($reservation['orderStatus'] == 'Available for pickup') {
         $readyForPickupCount++;
       }
     }
@@ -163,7 +186,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(is_array($items), 'Got array in return');
     $this->assertEqual(count($items), 2, 'Found 2 materials in array');
   }
-  
+
   private function test_bibdk_openuserstatus_get_fiscal_materials() {
     $fiscals = bibdk_openuserstatus_get_fiscals($this->response);
     $items = bibdk_openuserstatus_get_fiscal_materials($fiscals);
@@ -175,11 +198,95 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
   }
 
+  /** TESTING BIBDK_OPENUSERSTATUS.MODULE **/
+
+  private function test_bibdk_openuserstatus_request() {
+    $ret = bibdk_openuserstatus_request();
+    $this->assertTrue(array_key_exists($this->agencyId, $ret), 'Test agencyid is present');
+
+    $userstatusResponse = $ret[$this->agencyId];
+
+    $this->assertTrue(is_array($userstatusResponse->response), 'Userstatusresponse has response array');
+    $this->assertNull($userstatusResponse->error, 'Error is NULL');
+    $this->assertEqual($userstatusResponse->userId, $this->userId, 'userId in UserStatusResponse matches the expected value');
+  }
+
+  private function test_bibdk_openuserstatus_get_favourites() {
+    $ret = bibdk_openuserstatus_get_favourites();
+    $this->assertTrue(is_array($ret), 'Array was returned');
+    $this->assertEqual(count($ret), 2, 'Array count equals 2');
+    $this->assertTrue(array_key_exists($this->agencyId, $ret), 'Testlibrary with id 737600 was found in $_SESSION');
+  }
+
+  private function test_bibdk_openuserstatus_get_agencyname() {
+    $test = bibdk_openuserstatus_get_agencyname($this->agencyId);
+    $this->assertEqual($test, 'Hovedbiblioteket', 'Correct branch agencyname returned');
+    $test = bibdk_openuserstatus_get_agencyname(5); //Could be any number not matching a known agencyId
+    $this->assertNull($test, 'Method return NULL as expected');
+  }
+
+  private function test_bibdk_openuserstatus_get_favourites_array() {
+    $ret = bibdk_openuserstatus_get_favourites_array();
+
+    $this->assertTrue(is_array($ret), 'Array was returned');
+    $this->assertEqual(count($ret), 2, 'Array length equal 2');
+    $this->assertTrue((array_key_exists('710119', $ret) && array_key_exists($this->agencyId, $ret)), 'Arraykeys found as expected');
+    $this->assertEqual($ret['710119'], 'Vesterbro Bibliotek', '\'Vesterbro Bibliotek\' found in array as expected');
+    $this->assertEqual($ret[$this->agencyId], 'Hovedbiblioteket', '\'Hovedbiblioteket\' found in array as expected');
+  }
+
+  private function test_bibdk_openuserstatus_get_pickup_agencies() {
+    $ret = bibdk_openuserstatus_get_pickup_agencies($this->agencyId);
+
+    $this->assertTrue(is_array($ret), 'Array was returned');
+    $this->assertEqual(count($ret), 7, 'Array length equal 7');
+
+    $keys = array('737600', '737601', '737602', '737603', '737604', '737605', '737606');
+    $this->assertTrue($this->_keysExists($ret, $keys), 'Keys is found as expected');
+  }
+
+  private function test_bibdk_openuserstatus_renew_marked_submit(){
+    $form_state = drupal_json_decode($this->_loadFile('form_submit_renew_marked.json'));
+    $this->drupalGet($this->baseurl);
+    bibdk_openuserstatus_renew_marked_submit(array(), $form_state);
+    $this->drupalGet($this->baseurl . '/openuserstatus_webservice_mockup/renew');
+  }
+
   /**
-   * @param $filename
+   * Loads a file with the given filename ($filename) from
+   * biodk_openuserstatus/test/mockup and returns its content
+   *
+   * @param String $filename
    * @return mixed
    */
   private function _loadFile($filename) {
     return file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/' . $filename);
+  }
+
+  /**
+   * Sets the value of $_SESSION to a mocked up value
+   * (equal the content of biodk_openuserstatus/test/mockup/session.serialized)
+   * to avoid unnecessary calls to webservices
+   */
+  private function _setSession() {
+    $session = unserialize($this->_loadFile('session.serialized'));
+    $_SESSION = array_merge($_SESSION, $session);
+  }
+
+  /**
+   * Checks array $ret for each key provided in $keys. If one is not found
+   * FALSE will be returned
+   *
+   * @param array $ret
+   * @param array $keys
+   * @return bool
+   */
+  private function _keysExists($ret, $keys) {
+    foreach ($keys as $key) {
+      if (!array_key_exists($key, $ret)) {
+        return FALSE;
+      }
+    }
+    return TRUE;
   }
 }
