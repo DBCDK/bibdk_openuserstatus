@@ -1,24 +1,40 @@
 <?php
 
 function openuserstatus_webservice_mockup_menu() {
-  $items['openuserstatus_webservice_mockup/renew'] = array(
+  $items['openuserstatus_webservice_mockup/renew/%'] = array(
     'page callback' => 'openuserstatus_webservice_mockup_renew',
+    'page arguments' => array(2),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-
+  $items['openuserstatus_webservice_mockup/renew_all'] = array(
+    'page callback' => 'openuserstatus_webservice_mockup_renew_all',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
 /**
- * Loads the saved renew_loanes_response.jsonm, decodes it and returns.
+ * Loads the saved renew_loanes_response.json, decodes it and returns.
  * Used for testing only.
  *
  * @return array
  */
 function openuserstatus_webservice_mockup_renew() {
-  debug('openuserstatus_webservice_mockup_renew');
   $response = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/renew_loanes_response.json'));
-  debug($response);
-  return $response;
+  drupal_json_output($response['response']);
+  drupal_exit();
+}
+
+/**
+ * Loads the saved renew_loanes_response.json, decodes it and returns.
+ * Used for testing only.
+ *
+ * @return array
+ */
+function openuserstatus_webservice_mockup_renew_all() {
+  $response = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/renew_loanes_all_response.json'));
+  drupal_json_output($response['response']);
+  drupal_exit();
 }

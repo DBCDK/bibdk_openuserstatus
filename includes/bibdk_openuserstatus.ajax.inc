@@ -41,7 +41,7 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
 
 
   drupal_json_output('success');
-  exit(0);
+  drupal_exit();
 }
 
 /**
@@ -90,7 +90,7 @@ function bibdk_openuserstatus_check_post_values($post) {
 function bibdk_openuserstatus_output_error($msg) {
   $data['error']['msg'] = $msg;
   drupal_json_output($data);
-  exit(0);
+  drupal_exit();
 }
 
 function bibdk_openuserstatus_get_user_status() {
@@ -123,7 +123,7 @@ function bibdk_openuserstatus_get_user_status() {
 
  // print_r($data);
   drupal_json_output($data);
-  exit(0);
+  drupal_exit();
 }
 //TODO do this in a template
 function bibdk_openuserstatus_set_rows_html($data){
