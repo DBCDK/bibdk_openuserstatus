@@ -22,8 +22,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   public function setUp() {
+    //Note that openuserstatus_webservice_mockup should be enabled in local installation when testing locally
     parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup', 'ting_openuserstatus', 'ting_client');
-
 
     global $base_url;
     $this->baseurl = $base_url;

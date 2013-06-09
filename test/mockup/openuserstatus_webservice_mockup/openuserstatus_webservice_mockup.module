@@ -11,6 +11,11 @@ function openuserstatus_webservice_mockup_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
+  $items['openuserstatus_webservice_mockup/cancel_reservation'] = array(
+    'page callback' => 'openuserstatus_webservice_mockup_cancel_reservation',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
   return $items;
 }
 
@@ -34,6 +39,18 @@ function openuserstatus_webservice_mockup_renew() {
  */
 function openuserstatus_webservice_mockup_renew_all() {
   $response = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/renew_loanes_all_response.json'));
+  drupal_json_output($response['response']);
+  drupal_exit();
+}
+
+/**
+ * Loads the saved cancel_response.json, decodes it and returns.
+ * Used for testing only.
+ *
+ * @return array
+ */
+function openuserstatus_webservice_mockup_cancel_reservation() {
+  $response = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus') . '/test/mockup/cancel_reservation_response.json'));
   drupal_json_output($response['response']);
   drupal_exit();
 }

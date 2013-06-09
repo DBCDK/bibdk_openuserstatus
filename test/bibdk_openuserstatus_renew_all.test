@@ -1,9 +1,9 @@
 <?php
 
+/**
+ * Class BibdkOpenuserstatusRenewAllTest
+ */
 class BibdkOpenuserstatusRenewAllTest extends DrupalWebTestCase {
-  private $response;
-  private $agencyId = '737600'; //Guldborgsund
-  private $userId = '0413392648'; //Guldborgsund
   private $baseurl;
 
   /**
@@ -12,12 +12,13 @@ class BibdkOpenuserstatusRenewAllTest extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => t('Bibdk OpenUserstatus Renew All Test'),
-      'description' => t('Test that specifically tests the OpenUserstatus \'Renew All\' functionality'),
+      'description' => t('Testclass that specifically tests the OpenUserstatus \'Renew All\' functionality'),
       'group' => t('Bibliotek.dk - OpenUserstatus'),
     );
   }
 
   public function setUp() {
+    //Note that openuserstatus_webservice_mockup should be enabled in local installation when testing locally
     parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup', 'ting_openuserstatus', 'ting_client');
 
     global $base_url;
