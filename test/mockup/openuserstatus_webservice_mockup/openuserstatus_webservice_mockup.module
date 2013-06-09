@@ -1,9 +1,8 @@
 <?php
 
 function openuserstatus_webservice_mockup_menu() {
-  $items['openuserstatus_webservice_mockup/renew/%'] = array(
+  $items['openuserstatus_webservice_mockup/renew'] = array(
     'page callback' => 'openuserstatus_webservice_mockup_renew',
-    'page arguments' => array(2),
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
