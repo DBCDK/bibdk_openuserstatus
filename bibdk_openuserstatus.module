@@ -2,7 +2,6 @@
 module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
 module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.mypage');
 
-
 /**
  * Implements hook_menu.
  */
@@ -125,6 +124,9 @@ function bibdk_openuserstatus_get_favourites() {
       _bibdk_favourite_set_agencies();
     }
     $favourites = isset($_SESSION['bibdk_favourites']) ? $_SESSION['bibdk_favourites'] : NULL;
+    if (empty($favourites)) {
+      return;
+    }
     foreach ($favourites as $favourite) {
       $fav = unserialize($favourite);
       $ret[$fav->getAgencyId()] = $fav;
@@ -236,7 +238,7 @@ function bibdk_openuserstatus_renew_loans($loans) {
  * @param array $response
  */
 function bibdk_openuserstatus_parse_response($response) {
-  if(!isset($response['response']['renewLoanResponse']['renewLoanStatus'])){
+  if(!isset($response['response']['renewLoanResponse']['renewLoanStatus'])){ 
     return;
   }
 
