@@ -237,10 +237,10 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
 
       $item = array();
       $id = $reservation['orderId'];
-      $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+      $item['material'] = ( isset($reservation['author']) ? $reservation['author'] . ': ' : '' ) . $reservation['title'];
       $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
-      $item['queue_position'] = $reservation['holdQueuePosition'];
+      $item['queue_position'] = ( isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
       $items[$id] = $item;
     }
   }
