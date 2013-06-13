@@ -1,0 +1,15 @@
+p.userstatus-intro {
+  margin: 0 30px;
+}
+
+div.userstatus-menu {
+  margin: 0 30px;
+}
+
+p.userstatus-menu-label {
+  display: inline-block;
+}
+
+p.userstatus-menu-item {
+  display: inline-block;
+}

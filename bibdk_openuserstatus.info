@@ -9,6 +9,7 @@ dependencies[] = ting_openuserstatus
 dependencies[] = ting_agency
 
 files[] = lib/UserStatusResponse.php
+files[] = includes/bibdk_openuserstatus.admin.inc
 files[] = includes/bibdk_openuserstatus.form.inc
 files[] = includes/bibdk_openuserstatus.ajax.inc
 
@@ -16,3 +17,7 @@ files[] = test/bibdk_openuserstatus.test
 files[] = test/bibdk_openuserstatus_renew_all.test
 files[] = test/bibdk_openuserstatus_cancel_reservation.test
 files[] = test/bibdk_openuserstatus_unittest.test
+
+stylesheets[all][] = css/bibdk_openuserstatus.css
+
+configure = admin/config/user-interface/bibdk_openuserstatus

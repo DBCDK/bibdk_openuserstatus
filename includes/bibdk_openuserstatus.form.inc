@@ -138,7 +138,9 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
   foreach ($loans as $material) {
     $item = array();
     $id = $material['loanId'] . ';' . $material['agencyId'];
-    $item['material'] = $material['author'] . ': ' . $material['title'];
+    $material['author'] = ( isset($material['author']) ? $material['author'] : '' );
+    $material['title'] = ( isset($material['title']) ? $material['title'] : '' );
+    $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $material));
     $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
     $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
     $items[$id] = $item;
@@ -237,13 +239,20 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
 
       $item = array();
       $id = $reservation['orderId'];
-      $item['material'] = ( isset($reservation['author']) ? $reservation['author'] . ': ' : '' ) . $reservation['title'];
-      $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
+      $reservation['author'] = ( isset($reservation['author']) ? $reservation['author'] : '' );
+      $reservation['title'] = ( isset($reservation['title']) ? $reservation['title'] : '' );
+      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+      if ( count($pickUpAgencies) > 0 ) {
+        $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
+      } else {
+        $item['library'] = '';
+      }
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = ( isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
       $items[$id] = $item;
     }
   }
+// dpm($items);
   return $items;
 }
 
@@ -380,7 +389,9 @@ function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
   foreach ($res as $reservation) {
     if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
       $item = array();
-      $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+      $reservation['author'] = ( isset($reservation['author']) ? $reservation['author'] : '' );
+      $reservation['title'] = ( isset($reservation['title']) ? $reservation['title'] : '' );
+      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
       $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
       $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
       $item['pickup_id'] = $reservation['pickUpId'];
@@ -475,7 +486,9 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
   $items = array();
   foreach ($res as $reservation) {
     $item = array();
-    $item['material'] = $reservation['author'] . ': ' . $reservation['title'];
+    $reservation['author'] = ( isset($reservation['author']) ? $reservation['author'] : '' );
+    $reservation['title'] = ( isset($reservation['title']) ? $reservation['title'] : '' );
+    $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
     $item['type'] = $reservation['fiscalTransactionType'];
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];

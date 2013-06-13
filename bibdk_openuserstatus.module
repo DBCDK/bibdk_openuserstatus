@@ -6,22 +6,33 @@ module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatu
  * Implements hook_menu.
  */
 function bibdk_openuserstatus_menu() {
+
   $items['userstatus/pickuplib'] = array(
     'page callback' => 'bibdk_openuserstatus_new_pickuplibrary_selected',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/bibdk_openuserstatus.ajax.inc',
   );
-  
+
   $items['openuserstatus/getuserstatus'] = array(
     'page callback' => 'bibdk_openuserstatus_get_user_status',
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'includes/bibdk_openuserstatus.ajax.inc',
   );
-  
+
+  $items['admin/config/user-interface/bibdk_openuserstatus'] = array(
+    'title' => 'Bibliotek.dk openUserstatus',
+    'description' => 'Customize the openUserstatus settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_openuserstatus_admin'),
+    'access arguments' => array('administer blocks'),
+    'file' => 'includes/bibdk_openuserstatus.admin.inc',
+  );
+
   return $items;
 }
+
 
 /**
  * Impelements user_profile_tabs (
@@ -51,9 +62,15 @@ function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
  * @return array
  */
 function bibdk_openuserstatus_theme() {
+  $bibdk_openuserstatus_settings = variable_get('bibdk_openuserstatus_settings', $default = array());
   return array(
     'bibdk_openuserstatus' => array(
       'template' => 'theme/bibdk_openuserstatus',
+      'variables' => variable_get('bibdk_openuserstatus_settings', $default = array()),
+    ),
+    'bibdk_openuserstatus_row_item' => array(
+      'template' => 'theme/bibdk_openuserstatus_row_item',
+      'variables' => array('material' => array('author' => null,'title' => null)),
     ),
   );
 }
@@ -238,7 +255,7 @@ function bibdk_openuserstatus_renew_loans($loans) {
  * @param array $response
  */
 function bibdk_openuserstatus_parse_response($response) {
-  if(!isset($response['response']['renewLoanResponse']['renewLoanStatus'])){ 
+  if(!isset($response['response']['renewLoanResponse']['renewLoanStatus'])){
     return;
   }
 
