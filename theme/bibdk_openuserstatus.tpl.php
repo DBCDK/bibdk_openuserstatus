@@ -1,5 +1,7 @@
 <p class="userstatus-intro">
-  <?php print t($variables['label_userstatus_intro'], array(), array('context' => 'bibdk_openuserstatus')) ?>
+  <?php if (isset($variables['label_userstatus_intro'])): ?>
+    <?php print t($variables['label_userstatus_intro'], array(), array('context' => 'bibdk_openuserstatus')) ?>
+  <?php endif; ?>
 </p>
 
 <div class="userstatus-menu">

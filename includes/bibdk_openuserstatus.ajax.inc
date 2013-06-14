@@ -14,6 +14,13 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
   $orderId = $post['oid'];
   $agencyId = $post['aid'];
   $currentAgencyId = $post['caid'];
+  $subdivision = NULL;
+
+  if(strlen($agencyId) > 6){
+    $split = explode('-', $agencyId);
+    $agencyId = $split[0];
+    $subdivision = $split[1];
+  }
 
   if (!bibdk_openuserstatus_validate_selection($orderId, $currentAgencyId)) {
     $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus:error'));
@@ -22,8 +29,11 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
 
   $order = array();
   $order[0]['orderId'] = $orderId;
-  $order[0]['pickUpAgency'] = 'DK-' . $agencyId;
+  $order[0]['pickUpAgency'] = $agencyId;
   $order[0]['agencyId'] = $currentAgencyId;
+  if(isset($subdivision)){
+    $order[0]['pickUpAgencySubdivision'] = $subdivision;
+  }
 
   $favourites = bibdk_openuserstatus_get_favourites();
   if (isset($favourites[$currentAgencyId])) {
@@ -34,10 +44,8 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     bibdk_openuserstatus_output_error($msg);
   }
 
-
   $resp = $favourite->updateOrder($order);
   //TODO XXX check if god or bad stuff it returned from webservice
-  fb($resp, 'resp');
 
 
   drupal_json_output('success');
@@ -125,7 +133,7 @@ function bibdk_openuserstatus_get_user_status() {
   drupal_json_output($data);
   drupal_exit();
 }
-//TODO do this in a template
+
 function bibdk_openuserstatus_set_rows_html($data){
  $html = ''; 
  if (!empty($data)) {
