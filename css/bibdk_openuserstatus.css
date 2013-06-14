@@ -13,3 +13,8 @@ p.userstatus-menu-label {
 p.userstatus-menu-item {
   display: inline-block;
 }
+
+table.fiscal-account th:last-child,
+table.fiscal-account td:last-child {
+  text-align: right;
+}
