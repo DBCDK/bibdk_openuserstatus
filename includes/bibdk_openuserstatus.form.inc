@@ -31,6 +31,8 @@ function bibdk_openuserstatus_get_tables($form, $response) {
 
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
 
+  $form['#attributes'] = array('class' => array('openuserstatus'));
+
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'bibdk_openuserstatus') . '/js/bibdk_openuserstatus.js',
   );
@@ -175,7 +177,7 @@ function bibdk_openuserstatus_get_loans_table_form($form, $data) {
     '#sticky' => FALSE,
     '#multiple' => TRUE,
     '#attributes' => array(
-      'class' => array(),
+      'class' => array('loans'),
     ),
   );
 
@@ -315,7 +317,7 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
     '#multiple' => TRUE,
     '#attributes' => array(
       'class' => array(
-        'ajax-progress'
+        'ajax-progress', 'reservations',
       ),
     ),
   );
@@ -365,6 +367,7 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
 function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
   $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' <span>(' . count($data['items']) . ')</span>' : $readyforpcikTxt;
+  $data['class'] = 'readyforpickup';
 
   $form['readyforpickup']['readyforpickup_name'] = array(
     '#type' => 'markup',
@@ -437,6 +440,7 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
 function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
   $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' <span>(' . count($data['items']) . ')</span>' : $fiscalBaseTxt;
+  $data['class'] = 'fiscal-account';
 
   $form['fiscal']['fiscal_name'] = array(
     '#type' => 'markup',
@@ -511,7 +515,7 @@ function bibdk_openuserstatus_get_table($data) {
     '#empty' => $data['msg'],
     '#attributes' => array(
       'class' => array(
-        'table',
+        'table', $data['class'],
       ),
     ),
   );
