@@ -34,7 +34,7 @@ class BibdkOpenuserstatusUnitTest extends DrupalUnitTestCase {
     $fileName = 'bibdk_openuserstatus.ajax';
 
     $this->assertEqual($currentItem['page callback'], $pageCallbackFirst, '\'userstatus/pickuplib\' has page call back to '.$pageCallbackFirst);
-    $this->assertEqual($currentItem['file'], 'includes/'.$fileName.'.inc', '\'userstatus/pickuplib\' includes file \'includes/'.$fileName.'.inc\'');
+    $this->assertEqual($currentItem['file'], 'inclu$des/'.$fileName.'.inc', '\'userstatus/pickuplib\' includes file \'includes/'.$fileName.'.inc\'');
 
     $functionExists = function_exists($pageCallbackFirst);
     $this->assertFalse($functionExists, '\'includes/'.$fileName.'.inc\' is not yet loaded and the function '.$pageCallbackFirst.' is not found');
