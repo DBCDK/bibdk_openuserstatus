@@ -40,13 +40,17 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     $favourite = $favourites[$currentAgencyId];
   }
   else {
-    $msg = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus:error'));
-    bibdk_openuserstatus_output_error($msg);
+    $msg['error'] = t('Could not validate the data received from client', array(), array('context' => 'bibdk_openuserstatus:error'));
+    ajax_deliver(drupal_json_encode($msg));
   }
 
-  $resp = $favourite->updateOrder($order);
-  //TODO XXX check if god or bad stuff it returned from webservice
-
+  $result = $favourite->updateOrder($order);
+  if(isset($result['response']->updateOrderResponse->updateOrderStatus[0]->updateOrderError)){
+    $msg = t('An error occured and your request could not be completed.', array(), array('context' => 'bibdk_openuserstatus:error'));
+    $reason = $result['response']->updateOrderResponse->updateOrderStatus[0]->updateOrderError->{'$'};
+    watchdog('bibdk_openuserstaus', t('OpenUserstatus, %method could not be completed. Parameters: %parameters. Result: %result', array('%result' => var_export($result, TRUE), '%parameters' => var_export($order, TRUE), '%method' => 'updateOrder')), array(), WATCHDOG_ERROR);
+    bibdk_openuserstatus_output_error($msg, $reason);
+  }
 
   drupal_json_output('success');
   drupal_exit();
@@ -95,8 +99,9 @@ function bibdk_openuserstatus_check_post_values($post) {
  *
  * @param $msg
  */
-function bibdk_openuserstatus_output_error($msg) {
+function bibdk_openuserstatus_output_error($msg, $reason = '') {
   $data['error']['msg'] = $msg;
+  $data['error']['reason'] = $reason;
   drupal_json_output($data);
   drupal_exit();
 }
@@ -130,8 +135,7 @@ function bibdk_openuserstatus_get_user_status() {
   //echo $data['html'];
 
  // print_r($data);
-  drupal_json_output($data);
-  drupal_exit();
+  ajax_deliver($data);
 }
 
 function bibdk_openuserstatus_set_rows_html($data){

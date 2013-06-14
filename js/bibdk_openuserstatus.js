@@ -1,5 +1,4 @@
 (function($) {
-    //var element = '';
     Drupal.changePickupLib = function(element) {
 
         var oid = element.data('oid');
