@@ -59,13 +59,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->test_bibdk_openuserstatus_renew_marked_submit();
   }
 
-  /*
-  public function testRunnerTwo(){
-    $this->_setSession();
-    variable_set('openuserstatus_url', $this->baseurl . '/openuserstatus_webservice_mockup/renew_all');
-    $this->test_bibdk_openuserstatus_renew_all_submit();
-  }*/
-
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
 
   private function test_bibdk_opensuser_get_basic_information() {
