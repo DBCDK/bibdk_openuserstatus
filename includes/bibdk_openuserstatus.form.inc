@@ -8,7 +8,6 @@
  */
 function bibdk_openuserstatus_form($form) {
   $response = bibdk_openuserstatus_request();
-  //TODO mmj do error check
   $form = bibdk_openuserstatus_get_tables($form, $response);
   return $form;
 }
