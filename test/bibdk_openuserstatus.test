@@ -245,7 +245,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $count = count($ret);
     $this->assertEqual(count($ret), 7, t('Array length equal 7, got %count', array('%count' => $count)));
 
-    $keys = array('737600', '737601', '737602', '737603', '737604', '737605', '737606');
+    $keys = array('737600', '737601', '737602', '737603', '737604', '737605', 'Bogbussen:');
+    debug($ret);
     $this->assertTrue($this->_keysExists($ret, $keys), 'Keys is found as expected');
   }
 
@@ -299,6 +300,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   private function _keysExists($ret, $keys) {
     foreach ($keys as $key) {
       if (!array_key_exists($key, $ret)) {
+        debug($key);
+        debug($ret);
         return FALSE;
       }
     }
