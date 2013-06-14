@@ -189,7 +189,29 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
 
   $arr = array();
   foreach ($pickUpAgencies as $branch) {
-    $arr[$branch->branchId] = $branch->branchName;
+    if ($branch->branchName === 'Bogbussen') {
+      $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
+    }
+    else {
+      $arr[$branch->branchId] = $branch->branchName;
+    }
+  }
+  return $arr;
+}
+
+/**
+ * Sets agencySubdivisions under their parent branchId's. If bogbus
+ *
+ * @param TingClientAgencyBranch $branch
+ * @param array $arr
+ * @return array $arr
+ */
+function bibdk_openuserstatus_get_agency_subdivisions($branch, $arr) {
+  if (isset($branch->pickupAgency->agencySubdivision)) {
+    $subdivisions = $branch->getAgencySubdivisions();
+    foreach ($subdivisions as $key => $value) {
+      $arr['Bogbussen:'][$branch->branchId . '-' . $value] = $value;
+    }
   }
   return $arr;
 }
@@ -255,7 +277,7 @@ function bibdk_openuserstatus_renew_loans($loans) {
  * @param array $response
  */
 function bibdk_openuserstatus_parse_response($response) {
-  if(!isset($response['response']['renewLoanResponse']['renewLoanStatus'])){
+  if (!isset($response['response']['renewLoanResponse']['renewLoanStatus'])) {
     return;
   }
 
@@ -267,9 +289,10 @@ function bibdk_openuserstatus_parse_response($response) {
   $succes = array();
   foreach ($response as $item) {
     $material = bibdk_openuserstatus_get_material($item['loanId'], $loanedItems);
-    if(isset($item['renewLoanError'])){
+    if (isset($item['renewLoanError'])) {
       $error[$item['renewLoanError']][] = $material['author'] . ': ' . $material['title'];
-    } else if(isset($item['dateDue'])){
+    }
+    else if (isset($item['dateDue'])) {
       $succes[] = $material['author'] . ': ' . $material['title'];
     }
   }
@@ -285,8 +308,8 @@ function bibdk_openuserstatus_parse_response($response) {
  */
 function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
   foreach ($loanedItems as $loaned) {
-    if($loaned['loanId'] == $loanId){
-        return $loaned;
+    if ($loaned['loanId'] == $loanId) {
+      return $loaned;
     }
   }
   return array();
@@ -300,11 +323,11 @@ function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
  */
 function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succes) {
   foreach ($error as $reason => $err) {
-    if($reason == 'Item not renewable'){
+    if ($reason == 'Item not renewable') {
       drupal_set_message(t('The following items are not renewable: %materials', array('%materials' => implode(', ', $err)), array('context' => 'bibdk_openuserstatus:error')), 'error');
     }
   }
-  if(count($succes) >= 1){
+  if (count($succes) >= 1) {
     drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'notice');
   }
 }
@@ -325,7 +348,7 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
 
   $cancellations = array();
   foreach ($values as $orderId) {
-    if($orderId){
+    if ($orderId) {
       $material = bibdk_openuserstatus_get_reservation($orderId, $reservations);
       $agencyId = $material['agencyId'];
       $order = array(
@@ -347,7 +370,7 @@ function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
  */
 function bibdk_openuserstatus_get_reservation($orderId, $reservations) {
   foreach ($reservations as $reservation) {
-    if($reservation['orderId'] == $orderId){
+    if ($reservation['orderId'] == $orderId) {
       return $reservation;
     }
   }
