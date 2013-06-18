@@ -188,13 +188,17 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
   $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
 
   $arr = array();
-  foreach ($pickUpAgencies as $branch) {
-    if ($branch->branchName === 'Bogbussen') {
-      $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
+  if ( $pickUpAgencies ) {
+    foreach ($pickUpAgencies as $branch) {
+      if ($branch->branchName === 'Bogbussen') {
+        $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
+      }
+      else {
+        $arr[$branch->branchId] = $branch->branchName;
+      }
     }
-    else {
-      $arr[$branch->branchId] = $branch->branchName;
-    }
+  } else {
+    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->branchName;
   }
   return $arr;
 }
