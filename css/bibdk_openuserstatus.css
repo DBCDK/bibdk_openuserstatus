@@ -18,3 +18,8 @@ table.fiscal-account th:last-child,
 table.fiscal-account td:last-child {
   text-align: right;
 }
+
+.openuserstatus .element-title h3 {
+  margin: 1em 0;
+  font-weight: bold;
+}
