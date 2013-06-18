@@ -8,6 +8,7 @@
  */
 function bibdk_openuserstatus_form($form) {
   $response = bibdk_openuserstatus_request();
+// dpm($response);
   $form = bibdk_openuserstatus_get_tables($form, $response);
   return $form;
 }
@@ -243,11 +244,11 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
       $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
       $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
       $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
-      if (count($pickUpAgencies) > 0) {
+      if (count($pickUpAgencies) > 1) {
         $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
       }
       else {
-        $item['library'] = '';
+        $item['library'] = $pickUpAgencies[$reservation['agencyId']];
       }
       $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
       $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
@@ -454,6 +455,12 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   $form['fiscal']['fiscal_table'] = array(
     '#type' => 'markup',
     '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
+  );
+
+  $form['fiscal']['fiscal_branch_link'] = array(
+    '#type' => 'submit',
+    '#value' => t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
+    '#submit' => array('bibdk_openuserstatus_fiscal_branch_link'),
   );
 
   return $form;
