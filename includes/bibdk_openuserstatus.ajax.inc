@@ -121,15 +121,15 @@ function bibdk_openuserstatus_get_user_status() {
       if (!empty($response['error'])) {
         continue;
       }
-      $loans += (int) $response['loanedItems']['loansCount'];
-      $orders += (int) $response['orderedItems']['ordersCount'];
-      $debt += (float) $response['fiscalAccount']['totalAmount'];
+      $loans  += ( isset($response['loanedItems']['loansCount']) )    ? (int)$response['loanedItems']['loansCount'] : 0;
+      $orders += ( isset($response['orderedItems']['ordersCount']) )  ? (int) $response['orderedItems']['ordersCount'] : 0;
+      $debt   += ( isset($response['fiscalAccount']['totalAmount']) ) ? (float) $response['fiscalAccount']['totalAmount'] : 0;
     }
     $data['loans'] = $loans;
     $data['orders'] = $orders;
     $data['debt'] = $debt;
   }
-  
+
   $data['html'] = bibdk_openuserstatus_set_rows_html($data);
 
   //echo $data['html'];
@@ -139,18 +139,18 @@ function bibdk_openuserstatus_get_user_status() {
 }
 
 function bibdk_openuserstatus_set_rows_html($data){
- $html = ''; 
+ $html = '';
  if (!empty($data)) {
   $html .= '<div class="bibdk-mypage-row clearfix"> ';
   $html .= '<p class="label-row">'.t('my_loans_count', array(), array('context'=>'bibdk_openuserstatus')).'</p>';
   $html .= '<p class="value-row">'. $data['loans'].'</p>';
   $html .= '</div>';
-  
+
   $html .= '<div class="bibdk-mypage-row clearfix"> ';
   $html .= '<p class="label-row">'.t('my_orders_count', array(), array('context'=>'bibdk_openuserstatus')).'</p>';
   $html .= '<p class="value-row">'. $data['orders'].'</p>';
   $html .= '</div>';
-  
+
   $html .= '<div class="bibdk-mypage-row clearfix"> ';
   $html .= '<p class="label-row">'.t('my_debts', array(), array('context'=>'bibdk_openuserstatus')).'</p>';
   $html .= '<p class="value-row">'. $data['debt'].'</p>';
