@@ -445,33 +445,49 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
   );
 
   foreach ($data['agencies'] as $agencyid => $agency) {
+
     $agency['class'] = 'fiscal-account';
+
+    $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
+
     $agency['header'] = array(
       'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
       'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
       'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
       'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
     );
-    $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
+
     $form['fiscal'][$agencyid]['branchName'] = array(
       '#type' => 'markup',
-      '#markup' => '<h3>' . $agency['branchName'] . '</h3>',
+      '#markup' => '<h3>' . $agency['branchName'] . (( !empty($agency['items']) ) ? ' <span>(' . count($agency['items']) . ')</span>' : '') . '</h3>',
       '#prefix' => '<div class="element-title">',
       '#suffix' => '</div>',
     );
+
     $form['fiscal'][$agencyid]['fiscal_table'] = array(
       '#type' => 'markup',
       '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
     );
-/*
-    $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
-      '#type' => 'submit',
-      '#value' => t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_fiscal_branch_link'),
-    );
-*/
-  }
 
+    if ( $agency['paymentUrl'] && count($agency['items']) > 0 ) {
+      $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div class="payment-url-link">',
+        '#suffix' => '</div>',
+        '#markup' => l(
+          t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
+          $agency['paymentUrl'],
+          array(
+            'attributes' => array(
+              'class' => array('btn', 'btn-blue'),
+              'target' => array('_blank'),
+            ),
+          )
+        ),
+      );
+    }
+
+  }
 
   return $form;
 }
@@ -518,7 +534,8 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
     $items[$agencyId]['items'][] = $item;
-    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->branchName;;
+    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->branchName;
+    $items[$agencyId]['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
   }
   return $items;
 }

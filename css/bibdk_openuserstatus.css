@@ -23,3 +23,7 @@ table.fiscal-account td:last-child {
   margin: 1em 0;
   font-weight: bold;
 }
+
+.payment-url-link {
+  margin: 10px 5px 10px 0;
+}
