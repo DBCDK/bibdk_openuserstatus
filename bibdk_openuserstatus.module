@@ -1,0 +1,402 @@
+<?php
+module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
+module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.mypage');
+
+/**
+ * Implements hook_menu.
+ */
+function bibdk_openuserstatus_menu() {
+
+  $items['userstatus/pickuplib'] = array(
+    'page callback' => 'bibdk_openuserstatus_new_pickuplibrary_selected',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/bibdk_openuserstatus.ajax.inc',
+  );
+
+  $items['openuserstatus/getuserstatus'] = array(
+    'page callback' => 'bibdk_openuserstatus_get_user_status',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/bibdk_openuserstatus.ajax.inc',
+  );
+
+  $items['admin/config/user-interface/bibdk_openuserstatus'] = array(
+    'title' => 'Bibliotek.dk openUserstatus',
+    'description' => 'Customize the openUserstatus settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_openuserstatus_admin'),
+    'access arguments' => array('administer blocks'),
+    'file' => 'includes/bibdk_openuserstatus.admin.inc',
+  );
+
+  return $items;
+}
+
+
+/**
+ * Impelements user_profile_tabs (
+ * @see ding_user.module)
+ * */
+function bibdk_openuserstatus_user_profile2_tabs() {
+  global $user;
+  $username = isset($user->mail) ? ' - ' . $user->mail : '';
+  $ret = new stdClass();
+  $ret->label = t('my_loanerstatus @username', array('@username' => $username), array('context' => 'bibdk_openuserstatus'));
+  $ret->form = 'bibdk_openuserstatus_form';
+  $ret->type = 'bibdk_openuserstatus';
+  return $ret;
+}
+
+/**
+ * Implement hook_ctools_plugin_api().
+ */
+function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
+  if ($module == 'page_manager' && $api == 'pages_default') {
+    return array('version' => 1);
+  }
+}
+
+/**
+ * Implements hook_theme().
+ * @return array
+ */
+function bibdk_openuserstatus_theme() {
+  $bibdk_openuserstatus_settings = variable_get('bibdk_openuserstatus_settings', $default = array());
+  return array(
+    'bibdk_openuserstatus' => array(
+      'template' => 'theme/bibdk_openuserstatus',
+      'variables' => variable_get('bibdk_openuserstatus_settings', $default = array()),
+    ),
+    'bibdk_openuserstatus_row_item' => array(
+      'template' => 'theme/bibdk_openuserstatus_row_item',
+      'variables' => array('material' => array('author' => null,'title' => null)),
+    ),
+  );
+}
+
+/**
+ * get favourite libraries; get userstatus for each favourite
+ * @return array; empty array if no favourites; else [agencyId => UserStatusResponse]
+ */
+function bibdk_openuserstatus_request() {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  if (empty($favourites)) {
+    return array();
+  }
+  $ret = array();
+  foreach ($favourites as $favourite) {
+    $res = $favourite->getUserStatus();
+
+    if ($res === FALSE) {
+      continue;
+    }
+
+    if (isset($res['error'])) {
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse(NULL, $res['error']);
+    }
+    else {
+      $ret[$favourite->getAgencyId()] = new UserStatusResponse($res['response']);
+    }
+  }
+  return $ret;
+}
+
+/**
+ * Implements hook_bibdk_reservation_complete().
+ *
+ * unset $_SESSION variable for given library to
+ * refresh orderlist
+ *
+ * @param mixed $pids; an array of order pid's
+ * @param mixed $result; .. orderid of completed order
+ */
+function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
+  // if an order has been completed BibdkReservationOrderObject is set
+  // (@see bibdk_reservation.module::bibdk_reservation_new_order_object
+  $library = BibdkReservationOrderObject::GetObject()->getBranchId();
+  if (strpos($library, 'DK-') === 0) {
+    // strip 'DK-' from librarynumber
+    $library = substr($library, 3, strlen($library));
+  }
+  // @TODO should we just add an order to SESSION
+  // instead of updating the whole thing ??
+  // if we add an order from the data available, some elements will not be set
+  // and a refresh button is probably needed
+  if (isset($_SESSION['userStatus'][$library])) {
+    unset($_SESSION['userStatus'][$library]);
+  }
+}
+
+/**
+ * Returns favourite libraries
+ *
+ * @internal TingAgency $fav
+ * @return mixed
+ */
+function bibdk_openuserstatus_get_favourites() {
+  static $ret;
+  if (!isset($ret)) {
+    if (!isset($_SESSION['bibdk_favourites'])) {
+      _bibdk_favourite_set_agencies();
+    }
+    $favourites = isset($_SESSION['bibdk_favourites']) ? $_SESSION['bibdk_favourites'] : NULL;
+    if (empty($favourites)) {
+      return;
+    }
+    foreach ($favourites as $favourite) {
+      $fav = unserialize($favourite);
+      $ret[$fav->getAgencyId()] = $fav;
+    }
+  }
+  return $ret;
+}
+
+/**
+ * @param $agencyId
+ * @return null|string
+ */
+function bibdk_openuserstatus_get_agencyname($agencyId) {
+  $agency = new TingAgency($agencyId);
+  return isset($agency->getBranch()->branchName) ? $agency->getBranch()->branchName : NULL;
+}
+
+/**
+ * Gets favourite libraries for the current user
+ * Returns empty array if zero libraries are found
+ *
+ * @return array
+ */
+function bibdk_openuserstatus_get_favourites_array() {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  $arr = array();
+  foreach ($favourites as $favourite) {
+    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+  }
+  return $arr;
+}
+
+/**
+ * Gets favourite libraries for the current user
+ * Returns empty array if zero libraries are found
+ *
+ * @param string $agencyId
+ * @return array
+ */
+function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
+
+  $arr = array();
+  if ( $pickUpAgencies ) {
+    foreach ($pickUpAgencies as $branch) {
+      if ($branch->branchName === 'Bogbussen') {
+        $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
+      }
+      else {
+        $arr[$branch->branchId] = $branch->branchName;
+      }
+    }
+  } else {
+    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->branchName;
+  }
+  return $arr;
+}
+
+/**
+ * Sets agencySubdivisions under their parent branchId's. If bogbus
+ *
+ * @param TingClientAgencyBranch $branch
+ * @param array $arr
+ * @return array $arr
+ */
+function bibdk_openuserstatus_get_agency_subdivisions($branch, $arr) {
+  if (isset($branch->pickupAgency->agencySubdivision)) {
+    $subdivisions = $branch->getAgencySubdivisions();
+    foreach ($subdivisions as $key => $value) {
+      $arr['Bogbussen:'][$branch->branchId . '-' . $value] = $value;
+    }
+  }
+  return $arr;
+}
+
+/**
+ * Handles the form submission when the renew_all button is hit
+ *
+ * @param $form
+ * @param $form_state
+ */
+function bibdk_openuserstatus_renew_all_submit($form, &$form_state) {
+  $values = $form_state['values']['loans_table'];
+  $loans = array();
+  foreach ($values as $key => $value) {
+    if (!empty($key)) {
+      $ids = explode(';', $key);
+      $loanId = $ids[0];
+      $agencyId = $ids[1];
+      $loans[$agencyId][]['loanId'] = $loanId;
+    }
+  }
+  bibdk_openuserstatus_renew_loans($loans);
+}
+
+/**
+ * Handles the form submission when the renew_marked button is hit
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
+  $values = $form_state['values']['loans_table'];
+  $loans = array();
+  foreach ($values as $value) {
+    if (!empty($value)) {
+      $ids = explode(';', $value);
+      $loanId = $ids[0];
+      $agencyId = $ids[1];
+      $loans[$agencyId][]['loanId'] = $loanId;
+    }
+  }
+  bibdk_openuserstatus_renew_loans($loans);
+}
+
+/**
+ * Requesting renewal of loanids in $loans array
+ *
+ * @param $loans
+ */
+function bibdk_openuserstatus_renew_loans($loans) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  foreach ($loans as $agencyId => $loanIds) {
+    if (array_key_exists($agencyId, $favourites)) {
+      $response = $favourites[$agencyId]->renewLoan($loanIds);
+      bibdk_openuserstatus_parse_response($response);
+    }
+  }
+}
+
+/**
+ * Parses the webservice response and sets an appropriate message
+ *
+ * @param array $response
+ */
+function bibdk_openuserstatus_parse_response($response) {
+  if (!isset($response['response']['renewLoanResponse']['renewLoanStatus'])) {
+    return;
+  }
+
+  $response = $response['response']['renewLoanResponse']['renewLoanStatus'];
+  $userstatus = bibdk_openuserstatus_request();
+  $loanedItems = bibdk_openuserstatus_get_loans($userstatus);
+
+  $error = array();
+  $succes = array();
+  foreach ($response as $item) {
+    $material = bibdk_openuserstatus_get_material($item['loanId'], $loanedItems);
+    if (isset($item['renewLoanError'])) {
+      $error[$item['renewLoanError']][] = $material['author'] . ': ' . $material['title'];
+    }
+    else if (isset($item['dateDue'])) {
+      $succes[] = $material['author'] . ': ' . $material['title'];
+    }
+  }
+  bibdk_openuserstatus_renew_request_complete_set_messages($error, $succes);
+}
+
+/**
+ * Finds the loan with $loanId and returns the loan
+ *
+ * @param String $loanId
+ * @param array $loanedItems
+ * @return array
+ */
+function bibdk_openuserstatus_get_material($loanId, $loanedItems) {
+  foreach ($loanedItems as $loaned) {
+    if ($loaned['loanId'] == $loanId) {
+      return $loaned;
+    }
+  }
+  return array();
+}
+
+/**
+ * Displays appropriate messages to the user depending on result from webservice
+ *
+ * @param array $error
+ * @param array $succes
+ */
+function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succes) {
+  foreach ($error as $reason => $err) {
+    if ($reason == 'Item not renewable') {
+      drupal_set_message(t('The following items are not renewable: %materials', array('%materials' => implode(', ', $err)), array('context' => 'bibdk_openuserstatus:error')), 'error');
+    }
+  }
+  if (count($succes) >= 1) {
+    drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'notice');
+  }
+}
+
+/**
+ * Submit function handling submission triggered by the delete selected in the
+ * reservations in process table.
+ * Collects the sleceted and orderids and groups them buy associated agencyid
+ *
+ * @param array $form
+ * @param array $form_state
+ */
+function bibdk_openuserstatus_cancel_selected_submit($form, &$form_state) {
+  $values = $form_state['values']['reservations_table'];
+
+  $userstatus = bibdk_openuserstatus_request();
+  $reservations = bibdk_openuserstatus_get_reservations($userstatus);
+
+  $cancellations = array();
+  foreach ($values as $orderId) {
+    if ($orderId) {
+      $material = bibdk_openuserstatus_get_reservation($orderId, $reservations);
+      $agencyId = $material['agencyId'];
+      $order = array(
+        'orderId' => $orderId,
+        'orderType' => $material['orderType'],
+      );
+      $cancellations[$agencyId][] = $order;
+    }
+  }
+  bibdk_openuserstatus_cancel_reservations($cancellations);
+}
+
+/**
+ * Extracts reservations from userstatus object
+ *
+ * @param $orderId
+ * @param $reservations
+ * @return array
+ */
+function bibdk_openuserstatus_get_reservation($orderId, $reservations) {
+  foreach ($reservations as $reservation) {
+    if ($reservation['orderId'] == $orderId) {
+      return $reservation;
+    }
+  }
+  return array();
+}
+
+/**
+ * Requesting cancelation of orderids in $cancellations array
+ *
+ * @param array $cancellations
+ */
+function bibdk_openuserstatus_cancel_reservations($cancellations) {
+  $favourites = bibdk_openuserstatus_get_favourites();
+  foreach ($cancellations as $agencyId => $orderIds) {
+    if (array_key_exists($agencyId, $favourites)) {
+      $resp = $favourites[$agencyId]->cancelOrder($orderIds);
+      if (isset($resp['error']) && !empty($resp['error'])) {
+        drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus:error')), 'error');
+      }
+      else {
+        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'notice');
+      }
+    }
+  }
+}
