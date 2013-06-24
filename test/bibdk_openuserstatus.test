@@ -57,6 +57,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->test_bibdk_openuserstatus_get_favourites_array();
     $this->test_bibdk_openuserstatus_get_pickup_agencies();
     $this->test_bibdk_openuserstatus_renew_marked_submit();
+    $this->test_bibdk_openuserstatus_fiscal_form();
   }
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
@@ -185,13 +186,38 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
   private function test_bibdk_openuserstatus_get_fiscal_materials() {
     $fiscals = bibdk_openuserstatus_get_fiscals($this->response);
+
     $items = bibdk_openuserstatus_get_fiscal_materials($fiscals);
 
-    $this->assertTrue(is_array($items), 'Got array in return');
+    $this->assertTrue( is_array($items), 'Got array in return');
 
-    $this->assertEqual(count($items), 2, 'Found 2 materials in array');
-    $keys = (array_key_exists('material', $items[0]) && array_key_exists('type', $items[0]) && array_key_exists('date', $items[0]) && array_key_exists('amount', $items[0]));
-    $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
+    $keys = ( array_key_exists('737600', $items));
+    $this->assertTrue($keys, 'Array has branchId as key.');
+
+    $this->assertEqual(count($items['737600']['items']), 2, 'Found 2 materials in array');
+
+    $keys = (
+      array_key_exists('material', $items['737600']['items'][0]) &&
+      array_key_exists('type', $items['737600']['items'][0]) &&
+      array_key_exists('date', $items['737600']['items'][0]) &&
+      array_key_exists('amount', $items['737600']['items'][0])
+    );
+
+    $this->assertTrue($keys, 'Materials in items array seems to be correctly formatted');
+
+    $this->assertTrue(
+      array_key_exists('branchName', $items['737600']),
+      'Materials in items array has a "branchName" arraykey'
+    );
+
+    $this->assertEqual($items['737600']['branchName'], 'Hovedbiblioteket', 'branchName equals "Hovedbiblioteket"');
+
+    $this->assertTrue(
+      array_key_exists('paymentUrl', $items['737600']),
+      'Materials in items array has a "paymentUrl" arraykey'
+    );
+
+    $this->assertEqual($items['737600']['paymentUrl'], 'https://www.nyfac.bibnet.dk/sites/WCB/pub/patronstatus.html', 'paymentUrl equals "https://www.nyfac.bibnet.dk/sites/WCB/pub/patronstatus.html"');
   }
 
   /** TESTING BIBDK_OPENUSERSTATUS.MODULE **/
@@ -243,13 +269,18 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   private function test_bibdk_openuserstatus_renew_marked_submit(){
-    drupal_get_messages();
+    $messages = drupal_get_messages();
+
     $form_state = drupal_json_decode($this->_loadFile('form_submit_renew_marked.json'));
+    // $this->verbose(print_r($form_state,1));
+
     bibdk_openuserstatus_renew_marked_submit(array(), $form_state);
 
     $messages = drupal_get_messages();
+
     $this->assertTrue(array_key_exists('error', $messages), 'Found arraykey error in messages array');
     $this->assertTrue(array_key_exists('notice', $messages), 'Found arraykey notice in messages array');
+
 
     $index = 0;
     if(strstr($messages['error'][0], 'security updates available for one or more of your modules or themes')){
@@ -259,6 +290,24 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue((strstr($messages['error'][$index], 'Adler-Olsen, Jussi: Alfabethuset. - 6. udgave') && strstr($messages['error'][$index], 'items are not renewable')), 'Adler-Olsen, Jussi: Alfabethuset found as not renewable');
     $this->assertTrue((strstr($messages['notice'][0], 'Jacobsen, Steffen, f. 1956') && strstr($messages['notice'][0], 'materials was sucessfully renewed')), 'Jacobsen, Steffen, f. 1956: Passageren found as renewed');
   }
+
+
+  private function test_bibdk_openuserstatus_fiscal_form() {
+
+    $form = array();
+    $data = drupal_json_decode($this->_loadFile('form_fiscal_data.json'));
+
+    $form_expected = drupal_json_decode($this->_loadFile('form_fiscal_expected.json'));
+
+    $form = bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
+
+    $this->assertEqual($form, $form_expected, 'fiscal form formatted correctly');
+
+  }
+
+
+
+
 
   /**
    * Loads a file with the given filename ($filename) from
