@@ -469,7 +469,7 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
       '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
     );
 
-    if ( $agency['paymentUrl'] && count($agency['items']) > 0 ) {
+    if ( !empty($agency['paymentUrl']) && count($agency['items']) > 0 ) {
       $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
         '#type' => 'markup',
         '#prefix' => '<div class="payment-url-link">',
