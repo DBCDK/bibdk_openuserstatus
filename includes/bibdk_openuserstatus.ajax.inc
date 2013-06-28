@@ -132,10 +132,9 @@ function bibdk_openuserstatus_get_user_status() {
 
   $data['html'] = bibdk_openuserstatus_set_rows_html($data);
 
-  //echo $data['html'];
+  drupal_json_output($data);
+  drupal_exit();
 
- // print_r($data);
-  ajax_deliver($data);
 }
 
 function bibdk_openuserstatus_set_rows_html($data){
