@@ -444,7 +444,9 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
     '#suffix' => '</div>',
   );
 
-  foreach ($data['agencies'] as $agencyid => $agency) {
+  if (isset($data['agencies']) && !empty($data['agencies'])){
+
+    foreach ($data['agencies'] as $agencyid => $agency) {
 
     $agency['class'] = 'fiscal-account';
 
@@ -488,7 +490,7 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
     }
 
   }
-
+  }
   return $form;
 }
 
