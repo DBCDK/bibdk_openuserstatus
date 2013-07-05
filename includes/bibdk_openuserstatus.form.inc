@@ -444,51 +444,53 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
     '#suffix' => '</div>',
   );
 
-  foreach ($data['agencies'] as $agencyid => $agency) {
+  if (isset($data['agencies']) && !empty($data['agencies'])) {
 
-    $agency['class'] = 'fiscal-account';
+    foreach ($data['agencies'] as $agencyid => $agency) {
 
-    $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
+      $agency['class'] = 'fiscal-account';
 
-    $agency['header'] = array(
-      'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
-      'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
-      'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
-      'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
-    );
+      $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
 
-    $form['fiscal'][$agencyid]['branchName'] = array(
-      '#type' => 'markup',
-      '#markup' => '<h3>' . $agency['branchName'] . (( !empty($agency['items']) ) ? ' <span>(' . count($agency['items']) . ')</span>' : '') . '</h3>',
-      '#prefix' => '<div class="element-title">',
-      '#suffix' => '</div>',
-    );
-
-    $form['fiscal'][$agencyid]['fiscal_table'] = array(
-      '#type' => 'markup',
-      '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
-    );
-
-    if ( $agency['paymentUrl'] && count($agency['items']) > 0 ) {
-      $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
-        '#type' => 'markup',
-        '#prefix' => '<div class="payment-url-link">',
-        '#suffix' => '</div>',
-        '#markup' => l(
-          t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
-          $agency['paymentUrl'],
-          array(
-            'attributes' => array(
-              'class' => array('btn', 'btn-blue'),
-              'target' => array('_blank'),
-            ),
-          )
-        ),
+      $agency['header'] = array(
+        'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
+        'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
+        'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
+        'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
       );
+
+      $form['fiscal'][$agencyid]['branchName'] = array(
+        '#type' => 'markup',
+        '#markup' => '<h3>' . $agency['branchName'] . ((!empty($agency['items'])) ? ' <span>(' . count($agency['items']) . ')</span>' : '') . '</h3>',
+        '#prefix' => '<div class="element-title">',
+        '#suffix' => '</div>',
+      );
+
+      $form['fiscal'][$agencyid]['fiscal_table'] = array(
+        '#type' => 'markup',
+        '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
+      );
+
+      if (!empty($agency['paymentUrl']) && count($agency['items']) > 0) {
+        $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
+          '#type' => 'markup',
+          '#prefix' => '<div class="payment-url-link">',
+          '#suffix' => '</div>',
+          '#markup' => l(
+            t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
+            $agency['paymentUrl'],
+            array(
+              'attributes' => array(
+                'class' => array('btn', 'btn-blue'),
+                'target' => array('_blank'),
+              ),
+            )
+          ),
+        );
+      }
+
     }
-
   }
-
   return $form;
 }
 
@@ -528,7 +530,7 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
     $item = array();
     $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
     $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-    $agencyId = ( isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL );
+    $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
     $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
     $item['type'] = $reservation['fiscalTransactionType'];
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
