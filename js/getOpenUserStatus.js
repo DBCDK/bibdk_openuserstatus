@@ -12,6 +12,7 @@
     };
 
     Drupal.bibdkGetUserStatus = function(element, context) {
+        Drupal.addSpinner();
         // save context in global var to reload later
         Drupal.settings.userStatus = context;
         // Call ajax
@@ -21,7 +22,13 @@
             dataType: 'json',
             success: Drupal.setUserStatus
         });
-    }
+    };
+
+    Drupal.addSpinner = function() {
+        var element = $('.bibdk-openuserstatus-mypage-info .bibdk-mypage-row .item-row');
+        element.addClass('ajax-progress');
+        element.prepend('<span class="throbber">&nbsp;</span>');
+    };
 
 }(jQuery)); 
 
