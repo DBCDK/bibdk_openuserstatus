@@ -20,10 +20,15 @@ table.fiscal-account td:last-child {
 }
 
 .openuserstatus .element-title h3 {
-  margin: 1em 0;
+  margin: .2em 0;
   font-weight: bold;
 }
 
 .payment-url-link {
   margin: 10px 5px 10px 0;
+}
+
+.bibdk-openuserstatus-mypage-info .bibdk-mypage-row .item-row .throbber {
+    margin: .9em .5em;
+    float:right;
 }
