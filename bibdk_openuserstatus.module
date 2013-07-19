@@ -158,7 +158,7 @@ function bibdk_openuserstatus_get_favourites() {
  */
 function bibdk_openuserstatus_get_agencyname($agencyId) {
   $agency = new TingAgency($agencyId);
-  return isset($agency->getBranch()->branchName) ? $agency->getBranch()->branchName : NULL;
+  return isset($agency->getBranch()->branchShortName) ? $agency->getBranch()->branchShortName : NULL;
 }
 
 /**
@@ -171,7 +171,7 @@ function bibdk_openuserstatus_get_favourites_array() {
   $favourites = bibdk_openuserstatus_get_favourites();
   $arr = array();
   foreach ($favourites as $favourite) {
-    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->branchShortName;
   }
   return $arr;
 }
@@ -194,11 +194,11 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
         $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
       }
       else {
-        $arr[$branch->branchId] = $branch->branchName;
+        $arr[$branch->branchId] = $branch->branchShortName;
       }
     }
   } else {
-    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->branchName;
+    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->branchShortName;
   }
   return $arr;
 }

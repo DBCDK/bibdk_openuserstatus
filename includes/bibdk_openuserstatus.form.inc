@@ -536,7 +536,7 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
     $items[$agencyId]['items'][] = $item;
-    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->branchName;
+    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->branchShortName;
     $items[$agencyId]['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
   }
   return $items;
