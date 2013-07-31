@@ -159,8 +159,11 @@ function bibdk_openuserstatus_get_favourites() {
 function bibdk_openuserstatus_get_agencyname($agencyId) {
   global $language;
   $agency = new TingAgency($agencyId);
-  $name = $agency->getBranch()->getBranchName($language->language);
-  return isset ($name) ? $name : NULL;
+// @TODO which one to use ??
+//  $name = $agency->getBranch()->getBranchName($language->language);
+//  return isset ($name) ? $name : NULL;
+  $name = $agency->getBranch()->branchShortName($language->language);
+  return isset($name) ? $name : NULL;
 }
 
 /**
@@ -174,7 +177,7 @@ function bibdk_openuserstatus_get_favourites_array() {
   $favourites = bibdk_openuserstatus_get_favourites();
   $arr = array();
   foreach ($favourites as $favourite) {
-    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->getBranchName($language->language);
+    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->getBranchShortName($language->language);
   }
   return $arr;
 }
@@ -187,6 +190,7 @@ function bibdk_openuserstatus_get_favourites_array() {
  * @return array
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
+  global $language;
   $favourites = bibdk_openuserstatus_get_favourites();
   $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
 
@@ -199,11 +203,11 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
         $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
       }
       else {
-        $arr[$branch->branchId] = $branch->getBranchName($language->language);
+        $arr[$branch->branchId] = $branch->getBranchShortName($language->language);
       }
     }
   } else {
-    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->getBranchName($language->language);
+    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
   }
   return $arr;
 }
