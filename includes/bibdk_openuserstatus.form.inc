@@ -524,6 +524,7 @@ function bibdk_openuserstatus_get_fiscals($response) {
  * @return array $items
  */
 function bibdk_openuserstatus_get_fiscal_materials($res) {
+  global $language;
   $items = array();
   $favourites = bibdk_openuserstatus_get_favourites();
   foreach ($res as $reservation) {
@@ -536,7 +537,7 @@ function bibdk_openuserstatus_get_fiscal_materials($res) {
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
     $items[$agencyId]['items'][] = $item;
-    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->branchShortName;
+    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
     $items[$agencyId]['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
   }
   return $items;
