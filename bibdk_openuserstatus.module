@@ -162,7 +162,7 @@ function bibdk_openuserstatus_get_agencyname($agencyId) {
 // @TODO which one to use ??
 //  $name = $agency->getBranch()->getBranchName($language->language);
 //  return isset ($name) ? $name : NULL;
-  $name = $agency->getBranch()->branchShortName($language->language);
+  $name = $agency->getBranch()->getBranchShortName($language->language);
   return isset($name) ? $name : NULL;
 }
 
