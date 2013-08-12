@@ -17,7 +17,7 @@
         Drupal.settings.userStatus = context;
         // Call ajax
         $.ajax({
-            url: Drupal.settings.basePath + 'openuserstatus/getuserstatus',
+            url: Drupal.settings.basePath + Drupal.settings.pathPrefix + 'openuserstatus/getuserstatus',
             type: 'POST',
             dataType: 'json',
             success: Drupal.setUserStatus

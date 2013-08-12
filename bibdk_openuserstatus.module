@@ -157,8 +157,13 @@ function bibdk_openuserstatus_get_favourites() {
  * @return null|string
  */
 function bibdk_openuserstatus_get_agencyname($agencyId) {
+  global $language;
   $agency = new TingAgency($agencyId);
-  return isset($agency->getBranch()->branchName) ? $agency->getBranch()->branchName : NULL;
+// @TODO which one to use ??
+//  $name = $agency->getBranch()->getBranchName($language->language);
+//  return isset ($name) ? $name : NULL;
+  $name = $agency->getBranch()->getBranchShortName($language->language);
+  return isset($name) ? $name : NULL;
 }
 
 /**
@@ -168,10 +173,11 @@ function bibdk_openuserstatus_get_agencyname($agencyId) {
  * @return array
  */
 function bibdk_openuserstatus_get_favourites_array() {
+  global $language;
   $favourites = bibdk_openuserstatus_get_favourites();
   $arr = array();
   foreach ($favourites as $favourite) {
-    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->branchName;
+    $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->getBranchShortName($language->language);
   }
   return $arr;
 }
@@ -184,21 +190,24 @@ function bibdk_openuserstatus_get_favourites_array() {
  * @return array
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
+  global $language;
   $favourites = bibdk_openuserstatus_get_favourites();
   $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
 
   $arr = array();
-  if ( $pickUpAgencies ) {
+  global $language;
+  if ( $pickUpAgencies ) {    
     foreach ($pickUpAgencies as $branch) {
-      if ($branch->branchName === 'Bogbussen') {
+      $name = $branch->getBranchName($language->language);
+      if ($name === 'Bogbussen') {
         $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
       }
       else {
-        $arr[$branch->branchId] = $branch->branchName;
+        $arr[$branch->branchId] = $branch->getBranchShortName($language->language);
       }
     }
   } else {
-    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->branchName;
+    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
   }
   return $arr;
 }
