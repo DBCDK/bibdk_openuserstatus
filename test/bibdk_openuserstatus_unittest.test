@@ -98,4 +98,18 @@ class BibdkOpenuserstatusUnitTest extends DrupalUnitTestCase {
     $val = bibdk_openuserstatus_check_post_values($testarr);
     $this->assertTrue($val, 'TRUE is returned on correctly formatted array');
   }
+  
+  // unit test bibdk_openuserstatus_check_returndate method
+  // the method returns an empty string if if either date-method or 
+  // dateTime object fails.
+  public function test_bibdk_openuserstatus_datedue() {
+    $loanId = 4148698304;
+    $loanedItems = drupal_json_decode(file_get_contents(drupal_get_path('module', 'bibdk_openuserstatus').'/test/mockup/loanedItems.json'));
+    $test = bibdk_openuserstatus_get_material($loanId, $loanedItems);
+    
+    // get the first material
+    $material = $loanedItems[0];
+    $html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+    $this->assertTrue(!empty($html),'bibdk_openuserstatus_check_returndate parsed date correct');
+  }
 }

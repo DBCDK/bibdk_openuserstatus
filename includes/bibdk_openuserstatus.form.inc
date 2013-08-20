@@ -138,9 +138,7 @@ function bibdk_openuserstatus_get_loans($response) {
 function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
   foreach ($loans as $material) {
-    
-    $date = date('d.m.Y', strtotime($material['dateDue']));
-    $status_html = bibdk_openuserstatus_check_returndate($date);
+    $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
     
     $item = array();
     $id = $material['loanId'] . ';' . $material['agencyId'];
@@ -160,14 +158,26 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
  * @param date $returnDate 
  */
 function bibdk_openuserstatus_check_returndate($returnDate) {
-  $limit = new DateTime($returnDate);
+  // date returns FALSE on failure
+  $date = date('d.m.Y', strtotime($returnDate));
+  if ($date === FALSE) {
+    return '';
+  }
+  // DateTime object throws an exception on failure
+  try{
+  $limit = new DateTime($date);
+  }
+  catch(Exceptio $e){
+    // return an empty string on failure
+    return '';
+  }
   $limit->setTime(23, 59, 59);  // user has all day
 
   if ($limit < new DateTime('now')) {
     return '<span class="materialtype other-icon-small" title="'.bibdk_openuserstatus_get_date_overdue_txt().'">' . $returnDate . '</span>';
   }
   else{
-    return '<span>' . $returnDate . '</span>';
+    return '<span>' . $date . '</span>';
   } 
 }
 
