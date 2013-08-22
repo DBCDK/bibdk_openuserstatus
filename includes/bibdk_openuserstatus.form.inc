@@ -174,7 +174,7 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
   $limit->setTime(23, 59, 59);  // user has all day
 
   if ($limit < new DateTime('now')) {
-    return '<span class="materialtype other-icon-small" title="'.bibdk_openuserstatus_get_date_overdue_txt().'">' . $date . '</span>';
+    return '<span class="alert red-alert" title="'.bibdk_openuserstatus_get_date_overdue_txt().'">' . $date . '</span>';
   }
   else{
     return '<span>' . $date . '</span>';
