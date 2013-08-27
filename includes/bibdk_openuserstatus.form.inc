@@ -289,6 +289,10 @@ function bibdk_openuserstatus_select($form, &$form_state, $pickUpAgencies, $rese
       ),
     ),
   );
+
+  $form['help'] = array(
+    '#markup' => '<p class="helptext" title="'.t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
+  );
   return $form;
 }
 
