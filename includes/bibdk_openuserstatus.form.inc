@@ -8,7 +8,6 @@
  */
 function bibdk_openuserstatus_form($form) {
   $response = bibdk_openuserstatus_request();
-// dpm($response);
   $form = bibdk_openuserstatus_get_tables($form, $response);
   return $form;
 }
@@ -245,7 +244,7 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
       $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
       $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
       if (count($pickUpAgencies) > 1) {
-        $item['library'] = drupal_render(drupal_get_form('bibdk_openuserstatus_select', $pickUpAgencies, $reservation));
+        $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
       }
       else {
         $item['library'] = $pickUpAgencies[$reservation['agencyId']];
@@ -255,7 +254,6 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
       $items[$id] = $item;
     }
   }
-  // dpm($items);
   return $items;
 }
 
@@ -269,7 +267,7 @@ function bibdk_openuserstatus_materials_in_process($reservations) {
  * @param $reservation
  * @return array $form
  */
-function bibdk_openuserstatus_select($form, &$form_state, $pickUpAgencies, $reservation) {
+function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
   $agencyId = $reservation['pickUpAgency'];
   if (strpos($agencyId, 'DK-') === 0) {
     $agencyId = substr($agencyId, 3, strlen($agencyId));
@@ -279,7 +277,7 @@ function bibdk_openuserstatus_select($form, &$form_state, $pickUpAgencies, $rese
   $form['select'] = array(
     '#type' => 'select',
     '#options' => $pickUpAgencies,
-    '#default_value' => $pickupAgency,
+    '#value' => $pickupAgency,
     '#attributes' => array(
       'data-oid' => array(
         $reservation['orderId'],
