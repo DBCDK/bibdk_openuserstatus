@@ -2,7 +2,7 @@ name = Bibliotek.dk - OpenUserstatus
 description = Handles the display of a users loanerstatus
 package = Bibliotek.dk
 core = 7.x
-version = 7.x-0.4
+version = 7.x-0.5
 
 dependencies[] = bibdk_favourite
 dependencies[] = ting_openuserstatus
