@@ -139,7 +139,7 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
   foreach ($loans as $material) {
     $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
-    
+
     $item = array();
     $id = $material['loanId'] . ';' . $material['agencyId'];
     $material['author'] = (isset($material['author']) ? $material['author'] : '');
@@ -155,7 +155,7 @@ function bibdk_openuserstatus_get_loaned_items($loans) {
 /** \brief Check if return date is ok.
  * return appropiate html to indicate status
  *
- * @param date $returnDate 
+ * @param date $returnDate
  */
 function bibdk_openuserstatus_check_returndate($returnDate) {
   // date returns FALSE on failure
@@ -174,11 +174,11 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
   $limit->setTime(23, 59, 59);  // user has all day
 
   if ($limit < new DateTime('now')) {
-    return '<span class="alert red-alert" title="'.bibdk_openuserstatus_get_date_overdue_txt().'">' . $date . '</span>';
+    return '<p><span class="alert red-alert" title="'.bibdk_openuserstatus_get_date_overdue_txt().'"></span><span>' . $date . '</span></p>';
   }
   else{
-    return '<span>' . $date . '</span>';
-  } 
+    return '<p><span class="alert no-alert"></span><span>' . $date . '</span></p>';
+  }
 }
 
 function bibdk_openuserstatus_get_date_overdue_txt() {
