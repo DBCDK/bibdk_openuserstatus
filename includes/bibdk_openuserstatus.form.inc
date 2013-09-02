@@ -80,9 +80,9 @@ function bibdk_openuserstatus_get_reservations($response) {
 /**
  * Creates the necessary items and header arrays for the loans tableselect form
  *
- * @param array $form   The form array containing the entire form
+ * @param array $form     The form array containing the entire form
  * @param array $response The OpenUserstatus response
- * @return array $form  The entire form array including the loans table
+ * @return array $form    The entire form array including the loans table
  */
 function bibdk_openuserstatus_get_loans_table($form, $response) {
   $loans = bibdk_openuserstatus_get_loans($response);
@@ -289,7 +289,7 @@ function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
   );
 
   $form['help'] = array(
-    '#markup' => '<p class="helptext" title="'.t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
+    '#markup' => '<p class="helptext" title="' . t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
   );
   return $form;
 }
@@ -468,6 +468,7 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
         '#suffix' => '</div>',
       );
 
+
       $form['fiscal'][$agencyid]['fiscal_table'] = array(
         '#type' => 'markup',
         '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
@@ -526,19 +527,22 @@ function bibdk_openuserstatus_get_fiscals($response) {
  * @return array $items
  */
 function bibdk_openuserstatus_get_fiscal_materials($res) {
-  global $language;
   $items = array();
   $favourites = bibdk_openuserstatus_get_favourites();
   global $language;
+
   foreach ($res as $reservation) {
     $item = array();
+
     $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
     $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
     $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
+
     $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
-    $item['type'] = $reservation['fiscalTransactionType'];
+    $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
     $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
     $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
+
     $items[$agencyId]['items'][] = $item;
     $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
     $items[$agencyId]['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
