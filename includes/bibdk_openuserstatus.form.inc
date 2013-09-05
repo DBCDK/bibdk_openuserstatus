@@ -137,16 +137,52 @@ function bibdk_openuserstatus_get_loans($response) {
 function bibdk_openuserstatus_get_loaned_items($loans) {
   $items = array();
   foreach ($loans as $material) {
+    $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+
     $item = array();
     $id = $material['loanId'] . ';' . $material['agencyId'];
     $material['author'] = (isset($material['author']) ? $material['author'] : '');
     $material['title'] = (isset($material['title']) ? $material['title'] : '');
     $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $material));
     $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
-    $item['returndate'] = date('d.m.Y', strtotime($material['dateDue']));
+    $item['returndate'] = $status_html;
     $items[$id] = $item;
   }
   return $items;
+}
+
+/** \brief Check if return date is ok.
+ * return appropiate html to indicate status
+ *
+ * @param date $returnDate
+ */
+function bibdk_openuserstatus_check_returndate($returnDate) {
+  // date returns FALSE on failure
+  $date = date('d.m.Y', strtotime($returnDate));
+  if ($date === FALSE) {
+    return '';
+  }
+  // DateTime object throws an exception on failure
+  try{
+  $limit = new DateTime($date);
+  }
+  catch(Exceptio $e){
+    // return an empty string on failure
+    return '';
+  }
+  $limit->setTime(23, 59, 59);  // user has all day
+
+  if ($limit < new DateTime('now')) {
+    return '<p><span class="alert red-alert" title="'.bibdk_openuserstatus_get_date_overdue_txt().'"></span><span>' . $date . '</span></p>';
+  }
+  else{
+    return '<p><span class="alert no-alert"></span><span>' . $date . '</span></p>';
+  }
+}
+
+function bibdk_openuserstatus_get_date_overdue_txt() {
+  $txt = t('Delivery_date_overdue', array(), array('context' => 'bibdk_openuserstatus'));
+  return $txt;
 }
 
 /**
@@ -289,7 +325,7 @@ function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
   );
 
   $form['help'] = array(
-    '#markup' => '<p class="helptext" title="'.t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
+    '#markup' => '<p class="helptext" title="' . t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
   );
   return $form;
 }
@@ -479,18 +515,15 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
           '#prefix' => '<div class="payment-url-link">',
           '#suffix' => '</div>',
           '#markup' => l(
-            t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')),
-            $agency['paymentUrl'],
-            array(
-              'attributes' => array(
-                'class' => array('btn', 'btn-blue'),
-                'target' => array('_blank'),
-              ),
-            )
+              t('fiscal_branch_link', array(), array('context' => 'bibdk_openuserstatus')), $agency['paymentUrl'], array(
+            'attributes' => array(
+              'class' => array('btn', 'btn-blue'),
+              'target' => array('_blank'),
+            ),
+              )
           ),
         );
       }
-
     }
   }
   return $form;
