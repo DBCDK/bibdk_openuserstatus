@@ -71,6 +71,6 @@ class BibdkOpenuserstatusRenewAllTest extends DrupalWebTestCase {
    */
   private function _setSession() {
     $session = unserialize($this->_loadFile('session.serialized'));
-    $_SESSION = array_merge($_SESSION, $session);
+    $_SESSION = isset($_SESSION) ? array_merge($_SESSION, $session) : $session;
   }
 }
