@@ -33,6 +33,11 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     variable_set('agency_search_url', 'http://openagency.addi.dk/2.2/');
   }
 
+  public function tearDown(){
+    parent::tearDown();
+    module_disable(array('openuserstatus_webservice_mockup'));
+  }
+
   public function testRunner() {
     $this->response = unserialize($this->_loadFile('response.serialized'));
 
@@ -61,14 +66,9 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->test_bibdk_openuserstatus_get_favourites_array();
     $this->test_bibdk_openuserstatus_get_pickup_agencies();
     $this->test_bibdk_openuserstatus_renew_marked_submit();
-    $this->test_bibdk_openuserstatus_fiscal_form();
+    //$this->test_bibdk_openuserstatus_fiscal_form();
   }
 
-  public function tearDown(){
-    parent::tearDown();
-    module_disable(array('openuserstatus_webservice_mockup'));
-
-  }
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
 
