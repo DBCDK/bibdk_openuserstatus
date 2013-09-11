@@ -16,6 +16,7 @@ class BibdkOpenuserstatusCancelReservationTest extends DrupalWebTestCase {
   }
 
   public function setUp() {
+    module_enable(array('openuserstatus_webservice_mockup'));
     //Note that openuserstatus_webservice_mockup should be enabled in local installation when testing locally
     parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup', 'ting_openuserstatus', 'ting_client');
 
@@ -24,6 +25,11 @@ class BibdkOpenuserstatusCancelReservationTest extends DrupalWebTestCase {
 
     variable_set('openuserstatus_url', $this->baseurl . '/openuserstatus_webservice_mockup/cancel_reservation');
     variable_set('agency_search_url', 'http://openagency.addi.dk/2.2/');
+  }
+
+  public function tearDown(){
+    parent::tearDown();
+    module_disable(array('openuserstatus_webservice_mockup'));
   }
 
   public function testRunner() {
@@ -59,6 +65,6 @@ class BibdkOpenuserstatusCancelReservationTest extends DrupalWebTestCase {
    */
   private function _setSession() {
     $session = unserialize($this->_loadFile('session.serialized'));
-    $_SESSION = array_merge($_SESSION, $session);
+    $_SESSION = isset($_SESSION) ? array_merge($_SESSION, $session) : $session;
   }
 }
