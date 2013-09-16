@@ -191,12 +191,16 @@ function bibdk_openuserstatus_get_favourites_array() {
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
   global $language;
+
   $favourites = bibdk_openuserstatus_get_favourites();
-  $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
+
+  if ($favourites[$agencyId]->getUpdateOrderAllowed()){
+    $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
+  }
 
   $arr = array();
   global $language;
-  if ( $pickUpAgencies ) {    
+  if ( isset($pickUpAgencies) ) {
     foreach ($pickUpAgencies as $branch) {
       $name = $branch->getBranchName($language->language);
       if ($name === 'Bogbussen') {
