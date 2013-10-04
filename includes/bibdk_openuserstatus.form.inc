@@ -358,7 +358,7 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
     '#multiple' => TRUE,
     '#attributes' => array(
       'class' => array(
-        'ajax-progress', 'reservations',
+        'reservations',
       ),
     ),
   );

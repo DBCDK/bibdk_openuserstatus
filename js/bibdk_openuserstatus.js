@@ -34,12 +34,14 @@
     };
 
     Drupal.addThrobber = function(element) {
+        $(element).parent().addClass('ajax-progress');
         $(element).toggleClass('visuallyhidden');
         $(element).parent().append('<span class="throbber">&nbsp;</span>');
     };
 
 
     Drupal.removeThrobber = function(element) {
+        $(element).parent().removeClass('ajax-progress');
         $('span[class="throbber"]').remove();
         $(element).toggleClass('visuallyhidden');
     };
