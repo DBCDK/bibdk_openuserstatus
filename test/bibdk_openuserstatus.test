@@ -34,8 +34,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   public function tearDown(){
-    parent::tearDown();
     module_disable(array('openuserstatus_webservice_mockup'));
+    parent::tearDown();
   }
 
   public function testRunner() {
