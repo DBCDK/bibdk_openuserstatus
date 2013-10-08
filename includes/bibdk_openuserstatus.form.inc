@@ -341,11 +341,7 @@ function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
  * @return array $form
  */
 function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations) {
-  $data['items'] = array();
-  if (!empty($reservations)) {
-    $data['items'] = bibdk_openuserstatus_get_ready_for_pickup_materials($reservations);
-  }
-
+  $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
@@ -353,26 +349,33 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
     'pickup_id' => t('pickup_id_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
-
-  $form = bibdk_openuserstatus_get_readyforpickup_table($form, $data);
-  return $form;
-}
-
-/**
- * Returns form array representing the ready for pickup table
- *
- * @param array $form
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
-  $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
-  $readyforpcikCount = (!empty($data['items'])) ? $readyforpcikTxt . ' <span>(' . count($data['items']) . ')</span>' : $readyforpcikTxt;
+  $data['items'] = array();
   $data['class'] = 'readyforpickup';
+  $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
+  $count = '';
+
+  if (!empty($reservations)) {
+    $items = array();
+    foreach ($reservations as $reservation) {
+      if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
+        $item = array();
+        $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
+        $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
+        $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+        $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
+        $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
+        $item['pickup_id'] = $reservation['pickUpId'];
+        $items[] = $item;
+      }
+    }
+    $data['items'] = $items;
+    $count = ' <span>(' . count($data['items']) . ')</span>';
+  }
+
 
   $form['readyforpickup']['readyforpickup_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $readyforpcikCount . '</h2>',
+    '#markup' => '<h2>' . $readyforpcikTxt . $count . '</h2>',
     '#prefix' => '<div class="element-title">',
     '#suffix' => '</div>',
   );
@@ -382,27 +385,6 @@ function bibdk_openuserstatus_get_readyforpickup_table($form, $data) {
     '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
   );
   return $form;
-}
-
-/**
- * @param $res
- * @return array
- */
-function bibdk_openuserstatus_get_ready_for_pickup_materials($res) {
-  $items = array();
-  foreach ($res as $reservation) {
-    if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
-      $item = array();
-      $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-      $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
-      $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
-      $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
-      $item['pickup_id'] = $reservation['pickUpId'];
-      $items[] = $item;
-    }
-  }
-  return $items;
 }
 
 /**
