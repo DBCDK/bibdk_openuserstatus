@@ -96,7 +96,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
   private function test_bibdk_openuserstatus_get_loans_table() {
     $form = array();
-    $form = bibdk_openuserstatus_get_loans_table($form, $this->response);
+    $loans = bibdk_openuserstatus_get_loans($this->response);
+    $form = bibdk_openuserstatus_get_loans_table($form, $loans);
 
     $this->assertTrue(is_array($form['loans']), 'Array correctly returned wrapped in a \'loans\' key');
 

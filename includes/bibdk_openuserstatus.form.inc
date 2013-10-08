@@ -25,12 +25,11 @@ function bibdk_openuserstatus_get_tables($form, $response) {
     '#type' => 'markup',
     '#markup' => theme('bibdk_openuserstatus'),
   );
-  $form = bibdk_openuserstatus_get_loans_table($form, $response);
-
+  $loans = bibdk_openuserstatus_get_loans($response);
   $reservations = bibdk_openuserstatus_get_reservations($response);
+  $form = bibdk_openuserstatus_get_loans_table($form, $loans);
   $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
   $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations);
-
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
 
   $form['#attributes'] = array('class' => array('openuserstatus'));
@@ -72,7 +71,7 @@ function bibdk_openuserstatus_get_reservations($response) {
  * @param array $response The OpenUserstatus response
  * @return array $form    The entire form array including the loans table
  */
-function bibdk_openuserstatus_get_loans_table($form, $response) {
+function bibdk_openuserstatus_get_loans_table($form, $loans) {
   $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
@@ -84,8 +83,7 @@ function bibdk_openuserstatus_get_loans_table($form, $response) {
   $count = '';
   $data['items'] = array();
 
-  if (!empty($response)) {
-    $loans = bibdk_openuserstatus_get_loans($response);
+  if (!empty($loans)) {
     $items = array();
 
     foreach ($loans as $material) {
