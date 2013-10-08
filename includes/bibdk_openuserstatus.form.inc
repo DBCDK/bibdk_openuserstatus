@@ -21,7 +21,10 @@ function bibdk_openuserstatus_form($form) {
  * @return array
  */
 function bibdk_openuserstatus_get_tables($form, $response) {
-  $form = bibdk_opensuser_get_basic_information($form);
+  $form['basics'] = array(
+    '#type' => 'markup',
+    '#markup' => theme('bibdk_openuserstatus'),
+  );
   $form = bibdk_openuserstatus_get_loans_table($form, $response);
 
   $reservations = bibdk_openuserstatus_get_reservations($response);
@@ -36,21 +39,6 @@ function bibdk_openuserstatus_get_tables($form, $response) {
     drupal_get_path('module', 'bibdk_openuserstatus') . '/js/bibdk_openuserstatus.js',
   );
 
-  return $form;
-}
-
-/**
- * Provides basic information printet at the top of the profile2 userstatus page
- *
- * @see theme/bibdk_openuserstatus.tpl.php
- * @param $form
- * @return mixed
- */
-function bibdk_opensuser_get_basic_information($form) {
-  $form['basics'] = array(
-    '#type' => 'markup',
-    '#markup' => theme('bibdk_openuserstatus'),
-  );
   return $form;
 }
 
