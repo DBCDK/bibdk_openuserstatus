@@ -43,7 +43,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
     //Testing bibdk_openuserstatus.ajax.inc -- unittest'ish
     $this->test_bibdk_openuserstatus_get_loans();
-    $this->test_bibdk_openuserstatus_get_loaned_items();
+    #$this->test_bibdk_openuserstatus_get_loaned_items();
     $this->test_bibdk_openuserstatus_get_loans_table();
 
     $this->test_bibdk_openuserstatus_get_reservations();

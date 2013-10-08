@@ -73,22 +73,72 @@ function bibdk_openuserstatus_get_reservations($response) {
  * @return array $form    The entire form array including the loans table
  */
 function bibdk_openuserstatus_get_loans_table($form, $response) {
-  $loans = bibdk_openuserstatus_get_loans($response);
-
-  $data['items'] = array();
-  if (!empty($loans)) {
-    $data['items'] = bibdk_openuserstatus_get_loaned_items($loans);
-  }
-
+  $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'returndate' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
-
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+  $loans_text = t('Loans', array(), array('context' => 'bibdk_userstatus'));
+  $count = '';
+  $data['items'] = array();
 
-  $form = bibdk_openuserstatus_get_loans_table_form($form, $data);
+  if (!empty($response)) {
+    $loans = bibdk_openuserstatus_get_loans($response);
+
+    #if (!empty($loans)) {
+      $items = array();
+      foreach ($loans as $material) {
+        $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+        $item = array();
+        $id = $material['loanId'] . ';' . $material['agencyId'];
+        $material['author'] = (isset($material['author']) ? $material['author'] : '');
+        $material['title'] = (isset($material['title']) ? $material['title'] : '');
+        $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $material));
+        $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
+        $item['returndate'] = $status_html;
+        $items[$id] = $item;
+      }
+      $data['items'] = $items;
+    #}
+
+    $count = ' <span>(' . count($data['items']) . ')</span>';
+
+    #if (!empty($data['items'])) {
+      $form['loans']['loans_renew_marked'] = array(
+        '#type' => 'submit',
+        '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
+        '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
+      );
+
+      $form['loans']['loans_renew_all'] = array(
+        '#type' => 'submit',
+        '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
+        '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
+      );
+    #}
+  }
+
+  $form['loans']['loans_name'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . $loans_text . $count . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
+  );
+
+  $form['loans']['loans_table'] = array(
+    '#type' => 'tableselect',
+    '#header' => $data['header'],
+    '#options' => $data['items'],
+    '#empty' => $data['msg'],
+    '#js_select' => FALSE,
+    '#sticky' => FALSE,
+    '#multiple' => TRUE,
+    '#attributes' => array(
+      'class' => array('loans'),
+    ),
+  );
 
   return $form;
 }
@@ -114,29 +164,6 @@ function bibdk_openuserstatus_get_loans($response) {
     }
   }
   return $loans;
-}
-
-/**
- * Creates the items array to be used in the loaned items tableselect form
- *
- * @param array $loans
- * @return array $items
- */
-function bibdk_openuserstatus_get_loaned_items($loans) {
-  $items = array();
-  foreach ($loans as $material) {
-    $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
-
-    $item = array();
-    $id = $material['loanId'] . ';' . $material['agencyId'];
-    $material['author'] = (isset($material['author']) ? $material['author'] : '');
-    $material['title'] = (isset($material['title']) ? $material['title'] : '');
-    $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $material));
-    $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
-    $item['returndate'] = $status_html;
-    $items[$id] = $item;
-  }
-  return $items;
 }
 
 /** \brief Check if return date is ok.
@@ -171,54 +198,6 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
 function bibdk_openuserstatus_get_date_overdue_txt() {
   $txt = t('Delivery_date_overdue', array(), array('context' => 'bibdk_openuserstatus'));
   return $txt;
-}
-
-/**
- * Returns the form array with the loaned items attached
- *
- * @param array $form
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_loans_table_form($form, $data) {
-  $loans = t('Loans', array(), array('context' => 'bibdk_userstatus'));
-  $loansCount = (!empty($data['items'])) ? $loans . ' <span>(' . count($data['items']) . ')</span>' : $loans;
-
-  $form['loans']['loans_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $loansCount . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
-  );
-
-  $form['loans']['loans_table'] = array(
-    '#type' => 'tableselect',
-    '#header' => $data['header'],
-    '#options' => $data['items'],
-    '#empty' => $data['msg'],
-    '#js_select' => FALSE,
-    '#sticky' => FALSE,
-    '#multiple' => TRUE,
-    '#attributes' => array(
-      'class' => array('loans'),
-    ),
-  );
-
-  if (!empty($data['items'])) {
-    $form['loans']['loans_renew_marked'] = array(
-      '#type' => 'submit',
-      '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
-    );
-
-    $form['loans']['loans_renew_all'] = array(
-      '#type' => 'submit',
-      '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
-    );
-  }
-
-  return $form;
 }
 
 /**
