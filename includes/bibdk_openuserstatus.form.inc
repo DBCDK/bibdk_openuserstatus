@@ -197,56 +197,74 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
  * @return array $form
  */
 function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
-  $data['items'] = array();
-  if (!empty($reservations)) {
-    $data['items'] = bibdk_openuserstatus_materials_in_process($reservations);
-  }
-
+  $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'reservation_date' => t('reservation_date', array(), array('context' => 'bibdk_openuserstatus')),
     'queue_position' => t('queue_position', array(), array('context' => 'bibdk_openuserstatus')),
   );
-
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+  $data['items'] = array();
+  $reservations_in_process = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
+  $count = '';
 
-  $form = bibdk_openuserstatus_get_reservations_table_form($form, $data);
+  if (!empty($reservations)) {
+    $items = array();
+    foreach ($reservations as $reservation) {
+      if (isset($reservation['orderStatus']) && ($reservation['orderStatus'] == 'In process' || $reservation['orderStatus'] == 'Requested via ill')) {
+
+        $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
+
+        $item = array();
+        $id = $reservation['orderId'];
+        $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
+        $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
+        $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+        if (count($pickUpAgencies) > 1) {
+          $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
+        }
+        else {
+          $item['library'] = $pickUpAgencies[$reservation['agencyId']];
+        }
+        $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
+        $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
+        $items[$id] = $item;
+      }
+    }
+    $data['items'] = $items;
+    $count = ' <span>(' . count($data['items']) . ')</span>';
+
+    $form['reservations']['reservations_delete'] = array(
+      '#type' => 'submit',
+      '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
+      '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
+    );
+  }
+
+  $form['reservations']['reservations_name'] = array(
+    '#type' => 'markup',
+    '#markup' => '<h2>' . $reservations_in_process . $count . '</h2>',
+    '#prefix' => '<div class="element-title">',
+    '#suffix' => '</div>',
+  );
+
+  $form['reservations']['reservations_table'] = array(
+    '#type' => 'tableselect',
+    '#header' => $data['header'],
+    '#options' => $data['items'],
+    '#empty' => $data['msg'],
+    '#js_select' => FALSE,
+    '#sticky' => FALSE,
+    '#multiple' => TRUE,
+    '#attributes' => array(
+      'class' => array(
+        'reservations',
+      ),
+    ),
+  );
 
   return $form;
-}
-
-/**
- * Extracts the currently loaned items from each favourite library and collects
- * them into a single array for easier parsing
- *
- * @param array $reservations
- * @return array $items
- */
-function bibdk_openuserstatus_materials_in_process($reservations) {
-  $items = array();
-  foreach ($reservations as $reservation) {
-    if (isset($reservation['orderStatus']) && ($reservation['orderStatus'] == 'In process' || $reservation['orderStatus'] == 'Requested via ill')) {
-
-      $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
-
-      $item = array();
-      $id = $reservation['orderId'];
-      $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-      $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
-      if (count($pickUpAgencies) > 1) {
-        $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
-      }
-      else {
-        $item['library'] = $pickUpAgencies[$reservation['agencyId']];
-      }
-      $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
-      $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
-      $items[$id] = $item;
-    }
-  }
-  return $items;
 }
 
 /**
@@ -283,49 +301,6 @@ function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
   $form['help'] = array(
     '#markup' => '<p class="helptext" title="' . t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
   );
-  return $form;
-}
-
-/**
- * Returns the form array with the reserved items attached
- *
- * @param array $form
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_reservations_table_form($form, $data) {
-  $reservations = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
-  $reservationsCount = (!empty($data['items'])) ? $reservations . ' <span>(' . count($data['items']) . ')</span>' : $reservations;
-
-  $form['reservations']['reservations_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $reservationsCount . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
-  );
-
-  $form['reservations']['reservations_table'] = array(
-    '#type' => 'tableselect',
-    '#header' => $data['header'],
-    '#options' => $data['items'],
-    '#empty' => $data['msg'],
-    '#js_select' => FALSE,
-    '#sticky' => FALSE,
-    '#multiple' => TRUE,
-    '#attributes' => array(
-      'class' => array(
-        'reservations',
-      ),
-    ),
-  );
-
-  if (!empty($data['items'])) {
-    $form['reservations']['reservations_delete'] = array(
-      '#type' => 'submit',
-      '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
-    );
-  }
   return $form;
 }
 
