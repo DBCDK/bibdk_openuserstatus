@@ -174,7 +174,7 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
   try{
   $limit = new DateTime($date);
   }
-  catch(Exceptio $e){
+  catch(Exception $e){
     // return an empty string on failure
     return '';
   }
