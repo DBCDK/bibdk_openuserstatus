@@ -181,16 +181,12 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
   $limit->setTime(23, 59, 59);  // user has all day
 
   if ($limit < new DateTime('now')) {
-    return '<p><span class="alert red-alert" title="'.bibdk_openuserstatus_get_date_overdue_txt().'"></span><span>' . $date . '</span></p>';
+    $date_overdue = t('Delivery_date_overdue', array(), array('context' => 'bibdk_openuserstatus'));
+    return '<p><span class="alert red-alert" title="' . $date_overdue . '"></span><span>' . $date . '</span></p>';
   }
   else{
     return '<p><span class="alert no-alert"></span><span>' . $date . '</span></p>';
   }
-}
-
-function bibdk_openuserstatus_get_date_overdue_txt() {
-  $txt = t('Delivery_date_overdue', array(), array('context' => 'bibdk_openuserstatus'));
-  return $txt;
 }
 
 /**
