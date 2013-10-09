@@ -191,8 +191,9 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
 
   if (!empty($reservations)) {
     $items = array();
+    $in_process_states = array('In process', 'Requested via ill', 'Requested');
     foreach ($reservations as $reservation) {
-      if (isset($reservation['orderStatus']) && ($reservation['orderStatus'] == 'In process' || $reservation['orderStatus'] == 'Requested via ill')) {
+      if (isset($reservation['orderStatus']) && (in_array($reservation['orderStatus'], $in_process_states))) {
 
         $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
 
