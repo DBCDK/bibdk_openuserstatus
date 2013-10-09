@@ -180,6 +180,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'help' => '',
     'reservation_date' => t('reservation_date', array(), array('context' => 'bibdk_openuserstatus')),
     'queue_position' => t('queue_position', array(), array('context' => 'bibdk_openuserstatus')),
   );
@@ -202,9 +203,15 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
         if (count($pickUpAgencies) > 1) {
           $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
+          $item['help']['data'] = array(
+            '#markup' => '<p class="helptext" title="' .
+              t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) .
+              '">?</p>',
+          );
         }
         else {
           $item['library'] = $pickUpAgencies[$reservation['agencyId']];
+          $item['help'] = '';
         }
         $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
         $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
@@ -276,10 +283,6 @@ function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
         $reservation['agencyId'],
       ),
     ),
-  );
-
-  $form['help'] = array(
-    '#markup' => '<p class="helptext" title="' . t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) . '">?</p>',
   );
   return $form;
 }
