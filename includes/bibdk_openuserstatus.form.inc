@@ -47,22 +47,10 @@ function bibdk_openuserstatus_get_tables($form, $response) {
  * single array
  *
  * @param array $response
- * @return array $reservations
+ * @return array
  */
 function bibdk_openuserstatus_get_reservations($response) {
-  $reservations = array();
-  foreach ($response as $id => $favourite) {
-    if (is_object($favourite)) {
-      $resp = $favourite->getResponse();
-      if (isset($resp['orderedItems']['order'])) {
-        foreach ($resp['orderedItems']['order'] as $orderedItem) {
-          $orderedItem['agencyId'] = $id;
-          $reservations[] = $orderedItem;
-        }
-      }
-    }
-  }
-  return $reservations;
+  return bibdk_openuserstatus_get_group_elements($response, 'orderedItems', 'order');
 }
 
 /**
@@ -144,22 +132,10 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
  * them into a single array for easier parsing
  *
  * @param array $response
- * @return array $loans
+ * @return array
  */
 function bibdk_openuserstatus_get_loans($response) {
-  $loans = array();
-  foreach ($response as $id => $favourite) {
-    if (is_object($favourite)) {
-      $resp = $favourite->getResponse();
-      if (isset($resp['loanedItems']['loan'])) {
-        foreach ($resp['loanedItems']['loan'] as $loanedItem) {
-          $loanedItem['agencyId'] = $id;
-          $loans[] = $loanedItem;
-        }
-      }
-    }
-  }
-  return $loans;
+  return bibdk_openuserstatus_get_group_elements($response, 'loanedItems', 'loan');
 }
 
 /** \brief Check if return date is ok.
@@ -453,22 +429,35 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
  * them into a single array for easier parsing
  *
  * @param array $response
- * @return array $loans
+ * @return array
  */
 function bibdk_openuserstatus_get_fiscals($response) {
-  $fiscals = array();
-  foreach ($response as $id => $favourite) {
-    if (is_object($favourite)) {
-      $resp = $favourite->getResponse();
-      if (isset($resp['fiscalAccount']['fiscalTransaction'])) {
-        foreach ($resp['fiscalAccount']['fiscalTransaction'] as $loanedItem) {
-          $loanedItem['agencyId'] = $id;
-          $fiscals[] = $loanedItem;
+  return bibdk_openuserstatus_get_group_elements($response, 'fiscalAccount', 'fiscalTransaction');
+}
+
+/**
+ * Extracts the from the user status each specified element from a group and
+ * returns the elements as an array
+ *
+ * @param array $user_status
+ * @param string $group
+ * @param string $element
+ * @return array
+ */
+function bibdk_openuserstatus_get_group_elements($user_status, $group, $element) {
+  $items = array();
+  foreach ($user_status as $agencyId => $agency_data) {
+    if (is_object($agency_data)) {
+      $resp = $agency_data->getResponse();
+      if (isset($resp[$group][$element])) {
+        foreach ($resp[$group][$element] as $item) {
+          $item['agencyId'] = $agencyId;
+          $items[] = $item;
         }
       }
     }
   }
-  return $fiscals;
+  return $items;
 }
 
 /**
