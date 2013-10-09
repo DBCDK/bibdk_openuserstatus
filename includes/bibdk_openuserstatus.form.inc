@@ -366,40 +366,42 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
  */
 function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
   $data = array();
-
-  if (!empty($fiscals)) {
-    $data['agencies'] = bibdk_openuserstatus_get_fiscal_materials($fiscals);
-  }
-
-  $form = bibdk_openuserstatus_get_fiscal_account_table_form($form, $data);
-  return $form;
-}
-
-/**
- * Returns form array representing the fiscal account table
- *
- * @param array $form
- * @param array $data
- * @return array $form
- */
-function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
-
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
-  $fiscalTxt = (!empty($data['items'])) ? $fiscalBaseTxt . ' <span>(' . count($data['items']) . ')</span>' : $fiscalBaseTxt;
-
   $form['fiscal']['fiscal_name'] = array(
     '#type' => 'markup',
-    '#markup' => '<h2>' . $fiscalTxt . '</h2>',
+    '#markup' => '<h2>' . $fiscalBaseTxt . '</h2>',
     '#prefix' => '<div class="element-title">',
     '#suffix' => '</div>',
   );
+  $count = '';
 
-  if (isset($data['agencies']) && !empty($data['agencies'])) {
+  if (!empty($fiscals)) {
+    $items = array();
+    $favourites = bibdk_openuserstatus_get_favourites();
+    global $language;
 
-    foreach ($data['agencies'] as $agencyid => $agency) {
+    foreach ($fiscals as $reservation) {
+      $item = array();
 
+      $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
+      $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
+      $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
+
+      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+      $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
+      $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
+      $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
+
+      $items[$agencyId][] = $item;
+    }
+
+    $agencies = array();
+    foreach (array_keys($items) as $agencyId) {
+      $agency = array();
+      $agency['items'] = $items[$agencyId];
+      $agency['branchName'] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
+      $agency['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
       $agency['class'] = 'fiscal-account';
-
       $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
 
       $agency['header'] = array(
@@ -409,21 +411,21 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
         'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
       );
 
-      $form['fiscal'][$agencyid]['branchName'] = array(
+      $form['fiscal'][$agencyId]['branchName'] = array(
         '#type' => 'markup',
-        '#markup' => '<h3>' . $agency['branchName'] . ((!empty($agency['items'])) ? ' <span>(' . count($agency['items']) . ')</span>' : '') . '</h3>',
+        '#markup' => '<h3>' . $agency['branchName'] . ' <span>(' . count($agency['items']) . ')</span></h3>',
         '#prefix' => '<div class="element-title">',
         '#suffix' => '</div>',
       );
 
 
-      $form['fiscal'][$agencyid]['fiscal_table'] = array(
+      $form['fiscal'][$agencyId]['fiscal_table'] = array(
         '#type' => 'markup',
         '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
       );
 
       if (!empty($agency['paymentUrl']) && count($agency['items']) > 0) {
-        $form['fiscal'][$agencyid]['fiscal_branch_link'] = array(
+        $form['fiscal'][$agencyId]['fiscal_branch_link'] = array(
           '#type' => 'markup',
           '#prefix' => '<div class="payment-url-link">',
           '#suffix' => '</div>',
@@ -439,6 +441,7 @@ function bibdk_openuserstatus_get_fiscal_account_table_form($form, $data) {
       }
     }
   }
+
   return $form;
 }
 
@@ -463,36 +466,6 @@ function bibdk_openuserstatus_get_fiscals($response) {
     }
   }
   return $fiscals;
-}
-
-/**
- * Creates the items array to be used in the fiscal account table form
- *
- * @param array $res
- * @return array $items
- */
-function bibdk_openuserstatus_get_fiscal_materials($res) {
-  $items = array();
-  $favourites = bibdk_openuserstatus_get_favourites();
-  global $language;
-
-  foreach ($res as $reservation) {
-    $item = array();
-
-    $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-    $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-    $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
-
-    $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
-    $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
-    $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
-    $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
-
-    $items[$agencyId]['items'][] = $item;
-    $items[$agencyId]['branchName'] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
-    $items[$agencyId]['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
-  }
-  return $items;
 }
 
 /**
