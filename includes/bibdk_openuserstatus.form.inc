@@ -106,11 +106,13 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
       '#type' => 'submit',
       '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
       '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
+      '#weight' => 1,
     );
     $form['loans']['loans_renew_all'] = array(
       '#type' => 'submit',
       '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
       '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
+      '#weight' => 1,
     );
   }
 
@@ -240,6 +242,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
       '#type' => 'submit',
       '#value' => t('delete_selected', array(), array('context' => 'bibdk_openuserstatus')),
       '#submit' => array('bibdk_openuserstatus_cancel_selected_submit'),
+      '#weight' => 1,
     );
   }
 
