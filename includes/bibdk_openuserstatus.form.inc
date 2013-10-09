@@ -27,10 +27,11 @@ function bibdk_openuserstatus_get_tables($form, $response) {
   );
   $loans = bibdk_openuserstatus_get_loans($response);
   $reservations = bibdk_openuserstatus_get_reservations($response);
+  $fiscals = bibdk_openuserstatus_get_fiscals($response);
   $form = bibdk_openuserstatus_get_loans_table($form, $loans);
   $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
   $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations);
-  $form = bibdk_openuserstatus_get_fiscal_account_table($form, $response);
+  $form = bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals);
 
   $form['#attributes'] = array('class' => array('openuserstatus'));
 
@@ -363,9 +364,7 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
  * @param $response
  * @return mixed
  */
-function bibdk_openuserstatus_get_fiscal_account_table($form, $response) {
-
-  $fiscals = bibdk_openuserstatus_get_fiscals($response);
+function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
   $data = array();
 
   if (!empty($fiscals)) {
