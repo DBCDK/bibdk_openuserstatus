@@ -347,9 +347,20 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
     '#suffix' => '</div>',
   );
 
+  $ra = array(
+          '#theme' => 'table',
+          '#header' => $data['header'],
+          '#rows' => $data['items'],
+          '#empty' => $data['msg'],
+          '#attributes' => array(
+            'class' => array(
+              'table', $data['class'],
+            ),
+          ),
+        );
   $form['readyforpickup']['readyforpickup_table'] = array(
     '#type' => 'markup',
-    '#markup' => drupal_render(bibdk_openuserstatus_get_table($data)),
+    '#markup' => drupal_render($ra),
   );
   return $form;
 }
@@ -414,10 +425,20 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
         '#suffix' => '</div>',
       );
 
-
+      $ra = array(
+              '#theme' => 'table',
+              '#header' => $agency['header'],
+              '#rows' => $agency['items'],
+              '#empty' => $agency['msg'],
+              '#attributes' => array(
+                'class' => array(
+                  'table', $agency['class'],
+                ),
+              ),
+            );
       $form['fiscal'][$agencyId]['fiscal_table'] = array(
         '#type' => 'markup',
-        '#markup' => drupal_render(bibdk_openuserstatus_get_table($agency)),
+        '#markup' => drupal_render($ra),
       );
 
       if (!empty($agency['paymentUrl'])) {
@@ -475,24 +496,4 @@ function bibdk_openuserstatus_get_group_elements($user_status, $group, $element)
     }
   }
   return $items;
-}
-
-/**
- * Returns a renderarray representing a basic table with no interactive elements
- *
- * @param array $data
- * @return array
- */
-function bibdk_openuserstatus_get_table($data) {
-  return array(
-    '#theme' => 'table',
-    '#header' => $data['header'],
-    '#rows' => $data['items'],
-    '#empty' => $data['msg'],
-    '#attributes' => array(
-      'class' => array(
-        'table', $data['class'],
-      ),
-    ),
-  );
 }
