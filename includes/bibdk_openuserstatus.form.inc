@@ -347,20 +347,16 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
     '#suffix' => '</div>',
   );
 
-  $ra = array(
-          '#theme' => 'table',
-          '#header' => $data['header'],
-          '#rows' => $data['items'],
-          '#empty' => $data['msg'],
-          '#attributes' => array(
-            'class' => array(
-              'table', $data['class'],
-            ),
-          ),
-        );
   $form['readyforpickup']['readyforpickup_table'] = array(
-    '#type' => 'markup',
-    '#markup' => drupal_render($ra),
+    '#theme' => 'table',
+    '#header' => $data['header'],
+    '#rows' => $data['items'],
+    '#empty' => $data['msg'],
+    '#attributes' => array(
+      'class' => array(
+        'table', $data['class'],
+      ),
+    ),
   );
   return $form;
 }
@@ -425,20 +421,16 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
         '#suffix' => '</div>',
       );
 
-      $ra = array(
-              '#theme' => 'table',
-              '#header' => $agency['header'],
-              '#rows' => $agency['items'],
-              '#empty' => $agency['msg'],
-              '#attributes' => array(
-                'class' => array(
-                  'table', $agency['class'],
-                ),
-              ),
-            );
       $form['fiscal'][$agencyId]['fiscal_table'] = array(
-        '#type' => 'markup',
-        '#markup' => drupal_render($ra),
+        '#theme' => 'table',
+        '#header' => $agency['header'],
+        '#rows' => $agency['items'],
+        '#empty' => $agency['msg'],
+        '#attributes' => array(
+          'class' => array(
+            'table', $agency['class'],
+          ),
+        ),
       );
 
       if (!empty($agency['paymentUrl'])) {
