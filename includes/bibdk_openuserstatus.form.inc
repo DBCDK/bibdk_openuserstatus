@@ -194,6 +194,13 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
     $in_process_states = array('In process', 'Requested via ill', 'Requested');
     foreach ($reservations as $reservation) {
       if (isset($reservation['orderStatus']) && (in_array($reservation['orderStatus'], $in_process_states))) {
+        // If reservation has pickUpExpiryDate set this is an order ready for
+        // pickup due to an error in the webservice handling the response
+        // from Integra libraries.
+        // See also bibdk_openuserstatus_get_reservations_readyforpickup_table().
+        if (isset($reservation['pickUpExpiryDate'])) {
+          continue;
+        }
 
         $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
 
@@ -312,14 +319,20 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
   if (!empty($reservations)) {
     $items = array();
     foreach ($reservations as $reservation) {
-      if (isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup') {
+      $available_pickup = isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup';
+      // Last part of if statement is a fix for orders from Integra libraries
+      // which has the orderStatus wrongfully set to 'In process' when order is
+      // ready for pickup.
+      // See also bibdk_openuserstatus_get_reservations_inprocess_table().
+      $integra_pickup_bug = isset($reservation['pickUpExpiryDate']) && $reservation['orderStatus'] == 'In process';
+      if ($available_pickup || $integra_pickup_bug ) {
         $item = array();
         $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
         $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
         $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
         $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
         $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
-        $item['pickup_id'] = $reservation['pickUpId'];
+        $item['pickup_id'] = isset($reservation['pickUpId']) ? $reservation['pickUpId'] : '';
         $items[] = $item;
       }
     }
