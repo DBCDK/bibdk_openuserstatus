@@ -22,8 +22,7 @@ function bibdk_openuserstatus_form($form) {
  */
 function bibdk_openuserstatus_get_tables($form, $response) {
   $form['basics'] = array(
-    '#type' => 'markup',
-    '#markup' => theme('bibdk_openuserstatus'),
+    '#theme' => 'bibdk_openuserstatus',
   );
   $loans = bibdk_openuserstatus_get_loans($response);
   $reservations = bibdk_openuserstatus_get_reservations($response);
