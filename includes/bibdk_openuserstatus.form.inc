@@ -68,7 +68,6 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
   );
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
   $loans_text = t('Loans', array(), array('context' => 'bibdk_userstatus'));
-  $count = '';
   $data['items'] = array();
 
   if (!empty($loans)) {
@@ -78,16 +77,19 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
       $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
       $item = array();
       $id = $material['loanId'] . ';' . $material['agencyId'];
-      $material['author'] = (isset($material['author']) ? $material['author'] : '');
-      $material['title'] = (isset($material['title']) ? $material['title'] : '');
-      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $material));
+      $item['material'] = array(
+        'data' => array(
+          '#theme' => 'bibdk_openuserstatus_row_item',
+          '#author' => (isset($material['author']) ? $material['author'] : ''),
+          '#title' => (isset($material['title']) ? $material['title'] : ''),
+        ),
+      );
       $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
       $item['returndate'] = $status_html;
       $items[$id] = $item;
     }
 
     $data['items'] = $items;
-    $count = ' <span>(' . count($data['items']) . ')</span>';
 
     $form['loans']['loans_renew_marked'] = array(
       '#type' => 'submit',
@@ -102,14 +104,11 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
       '#weight' => 1,
     );
   }
-
   $form['loans']['loans_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $loans_text . $count . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
+    '#theme' => 'bibdk_openuserstatus_table_name',
+    '#table_title' => $loans_text,
+    '#count' => count($data['items']),
   );
-
   $form['loans']['loans_table'] = array(
     '#type' => 'tableselect',
     '#header' => $data['header'],
@@ -186,7 +185,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
   $data['items'] = array();
   $reservations_in_process = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
-  $count = '';
 
   if (!empty($reservations)) {
     $items = array();
@@ -205,9 +203,13 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
 
         $item = array();
         $id = $reservation['orderId'];
-        $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-        $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-        $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+        $item['material'] = array(
+          'data' => array(
+            '#theme' => 'bibdk_openuserstatus_row_item',
+            '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
+            '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
+          ),
+        );
         if (count($pickUpAgencies) > 1) {
           $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
           $item['help']['data'] = array(
@@ -226,7 +228,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
       }
     }
     $data['items'] = $items;
-    $count = ' <span>(' . count($data['items']) . ')</span>';
 
     $form['reservations']['reservations_delete'] = array(
       '#type' => 'submit',
@@ -237,10 +238,9 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   }
 
   $form['reservations']['reservations_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $reservations_in_process . $count . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
+    '#theme' => 'bibdk_openuserstatus_table_name',
+    '#table_title' => $reservations_in_process,
+    '#count' => count($data['items']),
   );
 
   $form['reservations']['reservations_table'] = array(
@@ -313,7 +313,6 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
   $data['items'] = array();
   $data['class'] = 'readyforpickup';
   $readyforpcikTxt = t('Reservations_readyforpickup', array(), array('context' => 'bibdk_userstatus'));
-  $count = '';
 
   if (!empty($reservations)) {
     $items = array();
@@ -326,9 +325,13 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
       $integra_pickup_bug = isset($reservation['pickUpExpiryDate']) && $reservation['orderStatus'] == 'In process';
       if ($available_pickup || $integra_pickup_bug ) {
         $item = array();
-        $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-        $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
-        $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+        $item['material'] = array(
+          'data' => array(
+            '#theme' => 'bibdk_openuserstatus_row_item',
+            '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
+            '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
+          ),
+        );
         $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
         $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
         $item['pickup_id'] = isset($reservation['pickUpId']) ? $reservation['pickUpId'] : '';
@@ -336,15 +339,12 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
       }
     }
     $data['items'] = $items;
-    $count = ' <span>(' . count($data['items']) . ')</span>';
   }
 
-
   $form['readyforpickup']['readyforpickup_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $readyforpcikTxt . $count . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
+    '#theme' => 'bibdk_openuserstatus_table_name',
+    '#table_title' => $readyforpcikTxt,
+    '#count' => count($data['items']),
   );
 
   $form['readyforpickup']['readyforpickup_table'] = array(
@@ -370,12 +370,9 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
   $data = array();
   $fiscalBaseTxt = t('fiscal_account', array(), array('context' => 'bibdk_userstatus'));
   $form['fiscal']['fiscal_name'] = array(
-    '#type' => 'markup',
-    '#markup' => '<h2>' . $fiscalBaseTxt . '</h2>',
-    '#prefix' => '<div class="element-title">',
-    '#suffix' => '</div>',
+    '#theme' => 'bibdk_openuserstatus_table_name',
+    '#table_title' => $fiscalBaseTxt,
   );
-  $count = '';
 
   if (!empty($fiscals)) {
     $items = array();
@@ -385,12 +382,14 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
 
     foreach ($fiscals as $reservation) {
       $item = array();
-
-      $reservation['author'] = (isset($reservation['author']) ? $reservation['author'] : '');
-      $reservation['title'] = (isset($reservation['title']) ? $reservation['title'] : '');
       $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
-
-      $item['material'] = theme('bibdk_openuserstatus_row_item', array('material' => $reservation));
+      $item['material'] = array(
+        'data' => array(
+          '#theme' => 'bibdk_openuserstatus_row_item',
+          '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
+          '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
+        ),
+      );
       $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
       $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
       $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
@@ -415,10 +414,10 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
       );
 
       $form['fiscal'][$agencyId]['branchName'] = array(
-        '#type' => 'markup',
-        '#markup' => '<h3>' . $agency['branchName'] . ' <span>(' . count($agency['items']) . ')</span></h3>',
-        '#prefix' => '<div class="element-title">',
-        '#suffix' => '</div>',
+        '#theme' => 'bibdk_openuserstatus_table_name',
+        '#table_title' => $agency['branchName'],
+        '#count' => count($agency['items']),
+        '#heading_level' => '3',
       );
 
       $form['fiscal'][$agencyId]['fiscal_table'] = array(

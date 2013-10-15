@@ -104,7 +104,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $loans = $form['loans'];
 
     $this->assertTrue((is_array($loans['loans_name']) && is_array($loans['loans_table']) && is_array($loans['loans_renew_all']) && is_array($loans['loans_renew_marked'])), 'The present keys seems to be alright');
-    $this->assertTrue(strstr($loans['loans_name']['#markup'], '<span>(4)</span>'), 'Number of items seems to be correctly wrapped in a span element');
+    $this->assertTrue($loans['loans_name']['#count'] == 4, 'Number of items seems to be correctly wrapped in a span element');
   }
 
   private function test_bibdk_openuserstatus_get_reservations() {
@@ -163,13 +163,11 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $readyForPickup = $form['readyforpickup'];
 
     $this->assertTrue(array_key_exists('readyforpickup_name', $readyForPickup), 'Array contains readyforpickup_name key');
-    $this->assertTrue(array_key_exists('#type', $readyForPickup['readyforpickup_name']), 'key \'#type\' exists');
-    $this->assertTrue(array_key_exists('#markup', $readyForPickup['readyforpickup_name']), 'key \'#markup\' exists');
+    $this->assertTrue(array_key_exists('#count', $readyForPickup['readyforpickup_name']), 'key \'#count\' exists');
+    $this->assertTrue($readyForPickup['readyforpickup_name']['#count'] == 3, '3 reservations are ready for pickup');
 
     $this->assertTrue(array_key_exists('readyforpickup_table', $readyForPickup), 'Array contains readyforpickup_table key');
-    $this->assertTrue(array_key_exists('#type', $readyForPickup['readyforpickup_table']), 'key \'#type\' exists');
-    $this->assertTrue(array_key_exists('#markup', $readyForPickup['readyforpickup_table']), 'key \'#markup\' exists');
-    $this->assertTrue(!empty($readyForPickup['readyforpickup_table']['#markup']), '\'#markup\' is not empty');
+    $this->assertTrue(!empty($readyForPickup['readyforpickup_table']), '\'readyforpickup_table\' is not empty');
   }
 
   private function test_bibdk_openuserstatus_get_fiscals() {
