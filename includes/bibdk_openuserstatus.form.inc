@@ -359,7 +359,8 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
 
   if (!empty($fiscals)) {
     $items = array();
-    $favourites = bibdk_openuserstatus_get_favourites();
+   // $favourites = bibdk_openuserstatus_get_favourites();
+     $favourites = bibdk_favourite_get_favourites();
     global $language;
 
     foreach ($fiscals as $reservation) {

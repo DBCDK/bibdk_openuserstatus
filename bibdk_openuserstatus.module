@@ -80,7 +80,8 @@ function bibdk_openuserstatus_theme() {
  * @return array; empty array if no favourites; else [agencyId => UserStatusResponse]
  */
 function bibdk_openuserstatus_request() {
-  $favourites = bibdk_openuserstatus_get_favourites();
+  //$favourites = bibdk_openuserstatus_get_favourites();
+   $favourites = bibdk_favourite_get_favourites();
   if (empty($favourites)) {
     return array();
   }
@@ -134,7 +135,7 @@ function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
  * @internal TingAgency $fav
  * @return mixed
  */
-function bibdk_openuserstatus_get_favourites() {
+/*function bibdk_openuserstatus_get_favourites() {
   static $ret;
   if (!isset($ret)) {
     if (!isset($_SESSION['bibdk_favourites'])) {
@@ -150,7 +151,7 @@ function bibdk_openuserstatus_get_favourites() {
     }
   }
   return $ret;
-}
+}*/
 
 /**
  * @param $agencyId
@@ -174,7 +175,8 @@ function bibdk_openuserstatus_get_agencyname($agencyId) {
  */
 function bibdk_openuserstatus_get_favourites_array() {
   global $language;
-  $favourites = bibdk_openuserstatus_get_favourites();
+ // $favourites = bibdk_openuserstatus_get_favourites();
+  $favourites = bibdk_favourite_get_favourites();
   $arr = array();
   foreach ($favourites as $favourite) {
     $arr[$favourite->getBranch()->branchId] = $favourite->getBranch()->getBranchShortName($language->language);
@@ -191,7 +193,8 @@ function bibdk_openuserstatus_get_favourites_array() {
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
   global $language;
-  $favourites = bibdk_openuserstatus_get_favourites();
+//  $favourites = bibdk_openuserstatus_get_favourites();
+   $favourites = bibdk_favourite_get_favourites();
   $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
 
   $arr = array();
@@ -275,7 +278,8 @@ function bibdk_openuserstatus_renew_marked_submit($form, &$form_state) {
  * @param $loans
  */
 function bibdk_openuserstatus_renew_loans($loans) {
-  $favourites = bibdk_openuserstatus_get_favourites();
+ // $favourites = bibdk_openuserstatus_get_favourites();
+   $favourites = bibdk_favourite_get_favourites();
   foreach ($loans as $agencyId => $loanIds) {
     if (array_key_exists($agencyId, $favourites)) {
       $response = $favourites[$agencyId]->renewLoan($loanIds);
@@ -396,7 +400,8 @@ function bibdk_openuserstatus_get_reservation($orderId, $reservations) {
  * @param array $cancellations
  */
 function bibdk_openuserstatus_cancel_reservations($cancellations) {
-  $favourites = bibdk_openuserstatus_get_favourites();
+ // $favourites = bibdk_openuserstatus_get_favourites();
+   $favourites = bibdk_favourite_get_favourites();
   foreach ($cancellations as $agencyId => $orderIds) {
     if (array_key_exists($agencyId, $favourites)) {
       $resp = $favourites[$agencyId]->cancelOrder($orderIds);
