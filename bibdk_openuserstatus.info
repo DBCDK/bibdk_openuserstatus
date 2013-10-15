@@ -17,6 +17,7 @@ files[] = test/bibdk_openuserstatus.test
 files[] = test/bibdk_openuserstatus_renew_all.test
 files[] = test/bibdk_openuserstatus_cancel_reservation.test
 files[] = test/bibdk_openuserstatus_unittest.test
+files[] = test/bibdk_openuserstatus_form.test
 
 stylesheets[all][] = css/bibdk_openuserstatus.css
 

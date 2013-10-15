@@ -69,6 +69,18 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
   $loans_text = t('Loans', array(), array('context' => 'bibdk_userstatus'));
   $data['items'] = array();
+  $renew_marked = array(
+    '#type' => 'submit',
+    '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
+    '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
+    '#weight' => 1,
+  );
+  $renew_all = array(
+    '#type' => 'submit',
+    '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
+    '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
+    '#weight' => 1,
+  );
 
   if (!empty($loans)) {
     $items = array();
@@ -90,20 +102,10 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
     }
 
     $data['items'] = $items;
-
-    $form['loans']['loans_renew_marked'] = array(
-      '#type' => 'submit',
-      '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
-      '#weight' => 1,
-    );
-    $form['loans']['loans_renew_all'] = array(
-      '#type' => 'submit',
-      '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
-      '#submit' => array('bibdk_openuserstatus_renew_all_submit'),
-      '#weight' => 1,
-    );
+    $form['loans']['loans_renew_marked'] = $renew_marked;
+    $form['loans']['loans_renew_all'] = $renew_all;
   }
+
   $form['loans']['loans_name'] = array(
     '#theme' => 'bibdk_openuserstatus_table_name',
     '#table_title' => $loans_text,
@@ -136,34 +138,32 @@ function bibdk_openuserstatus_get_loans($response) {
   return bibdk_openuserstatus_get_group_elements($response, 'loanedItems', 'loan');
 }
 
-/** \brief Check if return date is ok.
- * return appropiate html to indicate status
+/**
+ * Check if return date is valid (of format dd.mm.yyyy) and
+ * returns render array if valid and empty string otherwise.
  *
- * @param date $returnDate
+ * @param string $returnDate
  */
 function bibdk_openuserstatus_check_returndate($returnDate) {
-  // date returns FALSE on failure
-  $date = date('d.m.Y', strtotime($returnDate));
-  if ($date === FALSE) {
-    return '';
-  }
-  // DateTime object throws an exception on failure
-  try{
-  $limit = new DateTime($date);
-  }
-  catch(Exception $e){
-    // return an empty string on failure
-    return '';
-  }
-  $limit->setTime(23, 59, 59);  // user has all day
+  // strtotime returns FALSE on failure
+  $timestamp = strtotime($returnDate);
 
-  if ($limit < new DateTime('now')) {
-    $date_overdue = t('Delivery_date_overdue', array(), array('context' => 'bibdk_openuserstatus'));
-    return '<p><span class="alert red-alert" title="' . $date_overdue . '"></span><span>' . $date . '</span></p>';
+  if ($timestamp === FALSE) {
+    return '';
   }
-  else{
-    return '<p><span class="alert no-alert"></span><span>' . $date . '</span></p>';
-  }
+
+  $date = date('d.m.Y', $timestamp);
+  $limit = new DateTime($date);
+  $limit->setTime(23, 59, 59);  // user has all day
+  $overdue = $limit < new DateTime('now');
+
+  return array(
+    'data' => array(
+      '#theme' => 'bibdk_openuserstatus_return_date',
+      '#date' => $date,
+      '#overdue' => $overdue,
+    ),
+  );
 }
 
 /**
