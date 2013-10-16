@@ -87,13 +87,7 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
       $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
       $item = array();
       $id = $material['loanId'] . ';' . $material['agencyId'];
-      $item['material'] = array(
-        'data' => array(
-          '#theme' => 'bibdk_openuserstatus_row_item',
-          '#author' => (isset($material['author']) ? $material['author'] : ''),
-          '#title' => (isset($material['title']) ? $material['title'] : ''),
-        ),
-      );
+      $item['material'] = _bibdk_openuserstatus_material($material);
       $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
       $item['returndate'] = $status_html;
       $items[$id] = $item;
@@ -205,13 +199,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
         $item = array();
         $id = $reservation['orderId'];
-        $item['material'] = array(
-          'data' => array(
-            '#theme' => 'bibdk_openuserstatus_row_item',
-            '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
-            '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
-          ),
-        );
+        $item['material'] = _bibdk_openuserstatus_material($reservation);
         if (count($pickUpAgencies) > 1) {
           $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
           $item['help']['data'] = $help_icon;
@@ -320,13 +308,7 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
       $integra_pickup_bug = isset($reservation['pickUpExpiryDate']) && $reservation['orderStatus'] == 'In process';
       if ($available_pickup || $integra_pickup_bug ) {
         $item = array();
-        $item['material'] = array(
-          'data' => array(
-            '#theme' => 'bibdk_openuserstatus_row_item',
-            '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
-            '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
-          ),
-        );
+        $item['material'] = _bibdk_openuserstatus_material($reservation);
         $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
         $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
         $item['pickup_id'] = isset($reservation['pickUpId']) ? $reservation['pickUpId'] : '';
@@ -384,13 +366,7 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
     foreach ($fiscals as $reservation) {
       $item = array();
       $agencyId = (isset($reservation['agencyId']) ? $reservation['agencyId'] : NULL);
-      $item['material'] = array(
-        'data' => array(
-          '#theme' => 'bibdk_openuserstatus_row_item',
-          '#author' => (isset($reservation['author']) ? $reservation['author'] : ''),
-          '#title' => (isset($reservation['title']) ? $reservation['title'] : ''),
-        ),
-      );
+      $item['material'] = _bibdk_openuserstatus_material($reservation);
       $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
       $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
       $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
@@ -480,4 +456,20 @@ function bibdk_openuserstatus_get_group_elements($user_status, $group, $element)
     }
   }
   return $items;
+}
+
+/**
+ * Formats a material with author and title if the elements are present.
+ *
+ * @param array $material
+ * @return array
+ */
+function _bibdk_openuserstatus_material($material) {
+  return array(
+    'data' => array(
+      '#theme' => 'bibdk_openuserstatus_row_item',
+      '#author' => (isset($material['author']) ? $material['author'] : ''),
+      '#title' => (isset($material['title']) ? $material['title'] : ''),
+    ),
+  );
 }
