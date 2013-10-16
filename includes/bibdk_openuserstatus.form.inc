@@ -368,6 +368,12 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
     '#theme' => 'bibdk_openuserstatus_table_name',
     '#table_title' => $fiscalBaseTxt,
   );
+  $header = array(
+    'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
+    'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
+    'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
+  );
 
   if (!empty($fiscals)) {
     $items = array();
@@ -400,14 +406,7 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
       $agency['paymentUrl'] = $favourites[$agencyId]->getBranch()->getPaymentUrl();
       $agency['class'] = 'fiscal-account';
       $agency['msg'] = t('we_have_no_registered_debt_associated_with_your_name', array(), array('context' => 'bibdk_openuserstatus'));
-
-      $agency['header'] = array(
-        'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
-        'type' => t('type_header', array(), array('context' => 'bibdk_openuserstatus')),
-        'date' => t('date_header', array(), array('context' => 'bibdk_openuserstatus')),
-        'amount' => t('amount_header', array(), array('context' => 'bibdk_openuserstatus')),
-      );
-
+      $agency['header'] = $header;
       $form['fiscal'][$agencyId]['branchName'] = array(
         '#theme' => 'bibdk_openuserstatus_table_name',
         '#table_title' => $agency['branchName'],
