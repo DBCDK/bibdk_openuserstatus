@@ -267,8 +267,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
  * Returns a form array representing a select box. This is done in a
  * drupal_get_form to ensure the #default_value functionality
  *
- * @param $form
- * @param $form_state
  * @param $pickUpAgencies
  * @param $reservation
  * @return array $form

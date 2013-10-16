@@ -77,8 +77,28 @@ class BibdkOpenuserstatusFormUnitTest extends DrupalUnitTestCase {
     $this->assertTrue(is_array($today), 'Current date returns render array');
     $this->assertFalse($today['data']['#overdue'], 'Today date is not overdue.');
   }
+
+  public function test_bibdk_openuserstatus_select() {
+    $reservation = array('pickUpAgency' => '1234', 'orderId' => 'xyz', 'agencyId' => 'abc');
+    $dkreservation = array('pickUpAgency' => 'DK-1234') + $reservation;
+    $subreservation = array('pickUpAgencySubdivision' => '789') + $reservation;
+    $agencies = array();
+
+    $res_result = bibdk_openuserstatus_select($agencies, $reservation);
+    $dkres_result = bibdk_openuserstatus_select($agencies, $dkreservation);
+    $subres_result = bibdk_openuserstatus_select($agencies, $subreservation);
+
+    $this->assertTrue($res_result['select']['#value'] == '1234', 'Selected agency is set to 1234.');
+    $this->assertTrue($dkres_result['select']['#value'] == '1234', 'Selected agency is stripped for \'DK-\'.');
+    $this->assertTrue($subres_result['select']['#value'] == '1234-789', 'pickUpAgencySubdivision is appended to agencyId.');
+  }
 }
 
+
+/**
+ * Class for mocking structure returned from webservice containing data of
+ * loaned items, reservations and fiscal information.
+ */
 class AgencyMockObject {
   private $responseStructure = NULL;
 
