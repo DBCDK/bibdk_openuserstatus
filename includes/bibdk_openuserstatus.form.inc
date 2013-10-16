@@ -31,9 +31,7 @@ function bibdk_openuserstatus_get_tables($form, $response) {
   $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
   $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations);
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals);
-
   $form['#attributes'] = array('class' => array('openuserstatus'));
-
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'bibdk_openuserstatus') . '/js/bibdk_openuserstatus.js',
   );
@@ -191,7 +189,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
       '">?</p>',
   );
 
-
   if (!empty($reservations)) {
     $items = array();
     $in_process_states = array('In process', 'Requested via ill', 'Requested');
@@ -206,7 +203,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         }
 
         $pickUpAgencies = bibdk_openuserstatus_get_pickup_agencies($reservation['agencyId']);
-
         $item = array();
         $id = $reservation['orderId'];
         $item['material'] = array(
@@ -244,7 +240,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
     '#table_title' => $reservations_in_process,
     '#count' => count($data['items']),
   );
-
   $form['reservations']['reservations_table'] = array(
     '#type' => 'tableselect',
     '#header' => $data['header'],
@@ -259,7 +254,6 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
       ),
     ),
   );
-
   return $form;
 }
 
@@ -273,6 +267,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
  */
 function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
   $agencyId = $reservation['pickUpAgency'];
+
   if (strpos($agencyId, 'DK-') === 0) {
     $agencyId = substr($agencyId, 3, strlen($agencyId));
   }
@@ -393,11 +388,11 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
       $item['type'] = t($reservation['fiscalTransactionType'], array(), array('context' => 'bibdk_openuserstatus'));
       $item['date'] = date('d.m.Y', strtotime($reservation['fiscalTransactionDate']));
       $item['amount'] = $reservation['fiscalTransactionAmount'] . ' ' . $reservation['fiscalTransactionCurrency'];
-
       $items[$agencyId][] = $item;
     }
 
     $agencies = array();
+
     foreach (array_keys($items) as $agencyId) {
       $agency = array();
       $agency['items'] = $items[$agencyId];
@@ -419,7 +414,6 @@ function bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals) {
         '#count' => count($agency['items']),
         '#heading_level' => '3',
       );
-
       $form['fiscal'][$agencyId]['fiscal_table'] = array(
         '#theme' => 'table',
         '#header' => $agency['header'],
