@@ -135,8 +135,10 @@ function bibdk_openuserstatus_bibdk_reservation_complete($pids, $result) {
  * @internal TingAgency $fav
  * @return mixed
  */
-/*function bibdk_openuserstatus_get_favourites() {
-  static $ret;
+function bibdk_openuserstatus_get_favourites() {
+  return bibdk_favourite_get_favourites();
+}
+/*  static $ret;
   if (!isset($ret)) {
     if (!isset($_SESSION['bibdk_favourites'])) {
       _bibdk_favourite_set_agencies();
