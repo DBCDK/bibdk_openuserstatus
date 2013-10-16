@@ -185,6 +185,12 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
   $data['items'] = array();
   $reservations_in_process = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
+  $help_icon = array(
+    '#markup' => '<p class="helptext" title="' .
+      t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) .
+      '">?</p>',
+  );
+
 
   if (!empty($reservations)) {
     $items = array();
@@ -212,11 +218,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         );
         if (count($pickUpAgencies) > 1) {
           $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
-          $item['help']['data'] = array(
-            '#markup' => '<p class="helptext" title="' .
-              t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) .
-              '">?</p>',
-          );
+          $item['help']['data'] = $help_icon;
         }
         else {
           $item['library'] = $pickUpAgencies[$reservation['agencyId']];
