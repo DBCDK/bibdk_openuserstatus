@@ -194,46 +194,11 @@ function bibdk_openuserstatus_get_favourites_array() {
  * @return array
  */
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
-  global $language;
-//  $favourites = bibdk_openuserstatus_get_favourites();
    $favourites = bibdk_favourite_get_favourites();
-  $pickUpAgencies = $favourites[$agencyId]->getPickUpAgencies();
-
-  $arr = array();
-  global $language;
-  if ( $pickUpAgencies ) {    
-    foreach ($pickUpAgencies as $branch) {
-      $name = $branch->getBranchName($language->language);
-      if ($name === 'Bogbussen') {
-        $arr = bibdk_openuserstatus_get_agency_subdivisions($branch, $arr);
-      }
-      else {
-        $arr[$branch->branchId] = $branch->getBranchShortName($language->language);
-      }
-    }
-  } else {
-    $arr[$agencyId] = $favourites[$agencyId]->getBranch()->getBranchShortName($language->language);
-  }
-  return $arr;
+   $pickupAgencies = $favourites[$agencyId]->getPickupAgencySelectList();
+   return $pickupAgencies;
 }
-
-/**
- * Sets agencySubdivisions under their parent branchId's. If bogbus
- *
- * @param TingClientAgencyBranch $branch
- * @param array $arr
- * @return array $arr
- */
-function bibdk_openuserstatus_get_agency_subdivisions($branch, $arr) {
-  if (isset($branch->pickupAgency->agencySubdivision)) {
-    $subdivisions = $branch->getAgencySubdivisions();
-    foreach ($subdivisions as $key => $value) {
-      $arr['Bogbussen:'][$branch->branchId . '-' . $value] = $value;
-    }
-  }
-  return $arr;
-}
-
+ 
 /**
  * Handles the form submission when the renew_all button is hit
  *
