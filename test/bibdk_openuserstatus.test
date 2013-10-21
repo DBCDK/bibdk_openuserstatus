@@ -34,22 +34,21 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   public function tearDown(){
-    parent::tearDown();
     module_disable(array('openuserstatus_webservice_mockup'));
+    parent::tearDown();
   }
 
   public function testRunner() {
     $this->response = unserialize($this->_loadFile('response.serialized'));
 
     //Testing bibdk_openuserstatus.ajax.inc -- unittest'ish
-    $this->test_bibdk_opensuser_get_basic_information();
     $this->test_bibdk_openuserstatus_get_loans();
-    $this->test_bibdk_openuserstatus_get_loaned_items();
+    #$this->test_bibdk_openuserstatus_get_loaned_items();
     $this->test_bibdk_openuserstatus_get_loans_table();
 
     $this->test_bibdk_openuserstatus_get_reservations();
 
-    $this->test_bibdk_openuserstatus_get_ready_for_pickup_materials();
+    #$this->test_bibdk_openuserstatus_get_ready_for_pickup_materials();
     $this->test_bibdk_openuserstatus_get_reservations_readyforpickup_table();
 
     // Failing tests omitted /svi
@@ -71,22 +70,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
-
-  private function test_bibdk_opensuser_get_basic_information() {
-    $form = array();
-    $form = bibdk_opensuser_get_basic_information($form);
-
-    $this->assertTrue(is_array($form), 'Array correctly returned');
-    $this->assertTrue(array_key_exists('basics', $form), 'Array contains basics key');
-
-    $form = $form['basics'];
-
-    $this->assertTrue(array_key_exists('#type', $form), 'Array contains #type key');
-    $this->assertTrue(!empty($form['#type']), '#type has content');
-    $this->assertTrue(array_key_exists('#markup', $form), 'Array contains #markup key');
-    $this->assertTrue(!empty($form['#markup']), '#type has content');
-  }
-
 
   private function test_bibdk_openuserstatus_get_loans() {
     $loans = bibdk_openuserstatus_get_loans($this->response);
@@ -113,7 +96,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
   private function test_bibdk_openuserstatus_get_loans_table() {
     $form = array();
-    $form = bibdk_openuserstatus_get_loans_table($form, $this->response);
+    $loans = bibdk_openuserstatus_get_loans($this->response);
+    $form = bibdk_openuserstatus_get_loans_table($form, $loans);
 
     $this->assertTrue(is_array($form['loans']), 'Array correctly returned wrapped in a \'loans\' key');
 
