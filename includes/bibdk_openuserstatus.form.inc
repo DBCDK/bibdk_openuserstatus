@@ -299,8 +299,9 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
 
   if (!empty($reservations)) {
     $items = array();
+    $pickup_states = array('Available for pickup', 'Shelved');
     foreach ($reservations as $reservation) {
-      $available_pickup = isset($reservation['orderStatus']) && $reservation['orderStatus'] == 'Available for pickup';
+      $available_pickup = isset($reservation['orderStatus']) && in_array($reservation['orderStatus'], $pickup_states);
       // Last part of if statement is a fix for orders from Integra libraries
       // which has the orderStatus wrongfully set to 'In process' when order is
       // ready for pickup.
