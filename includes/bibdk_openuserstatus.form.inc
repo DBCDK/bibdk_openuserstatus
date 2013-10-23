@@ -311,7 +311,7 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
         $item = array();
         $item['material'] = _bibdk_openuserstatus_material($reservation);
         $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
-        $item['pickup_date'] = date('d.m.Y', strtotime($reservation['pickUpExpiryDate']));
+        $item['pickup_date'] = isset($reservation['pickUpExpiryDate']) ? date('d.m.Y', strtotime($reservation['pickUpExpiryDate'])) : '';
         $item['pickup_id'] = isset($reservation['pickUpId']) ? $reservation['pickUpId'] : '';
         $items[] = $item;
       }
