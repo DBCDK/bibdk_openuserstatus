@@ -195,7 +195,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   }
 
   private function test_bibdk_openuserstatus_get_favourites() {
-    $ret = bibdk_openuserstatus_get_favourites();
+    $ret = bibdk_favourite_get_favourites();
     $this->assertTrue(is_array($ret), 'Array was returned');
     $this->assertEqual(count($ret), 2, 'Array count equals 2');
     $this->assertTrue(array_key_exists($this->agencyId, $ret), 'Testlibrary with id 737600 was found in $_SESSION');

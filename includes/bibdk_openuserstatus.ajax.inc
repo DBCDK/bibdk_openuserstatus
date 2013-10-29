@@ -35,7 +35,7 @@ function bibdk_openuserstatus_new_pickuplibrary_selected() {
     $order[0]['pickUpAgencySubdivision'] = $subdivision;
   }
 
-  $favourites = bibdk_openuserstatus_get_favourites();
+  $favourites = bibdk_favourite_get_favourites();
   if (isset($favourites[$currentAgencyId])) {
     $favourite = $favourites[$currentAgencyId];
   }
