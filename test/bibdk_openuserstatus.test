@@ -43,12 +43,8 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
     //Testing bibdk_openuserstatus.ajax.inc -- unittest'ish
     $this->test_bibdk_openuserstatus_get_loans();
-    #$this->test_bibdk_openuserstatus_get_loaned_items();
     $this->test_bibdk_openuserstatus_get_loans_table();
-
     $this->test_bibdk_openuserstatus_get_reservations();
-
-    #$this->test_bibdk_openuserstatus_get_ready_for_pickup_materials();
     $this->test_bibdk_openuserstatus_get_reservations_readyforpickup_table();
 
     // Failing tests omitted /svi
@@ -76,22 +72,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(is_array($loans), 'Array correctly returned');
     $count = count($loans);
     $this->assertEqual($count, 4, t('Size of array seems right: should be: %right was %was', array('%right' => '4', '%was' => $count)));
-  }
-
-  private function test_bibdk_openuserstatus_get_loaned_items() {
-    $loans = bibdk_openuserstatus_get_loans($this->response);
-    $items = bibdk_openuserstatus_get_loaned_items($loans);
-
-    $this->assertTrue(is_array($items), 'Array correctly returned');
-    $count = count($items);
-    $this->assertEqual($count, 4, t('Size of array seems right: should be: %right was %was', array('%right' => '4', '%was' => $count)));
-
-    foreach ($items as $item) {
-      $this->assertTrue(is_array($item), 'Item is of type array');
-      $this->assertTrue(array_key_exists('material', $item), '\'material\' key exsists');
-      $this->assertTrue(array_key_exists('library', $item), '\'material\' key exsists');
-      $this->assertTrue(array_key_exists('returndate', $item), '\'material\' key exsists');
-    }
   }
 
   private function test_bibdk_openuserstatus_get_loans_table() {
@@ -137,17 +117,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(is_array($items), 'Got array in return');
 
     $this->assertEqual(count($items), 2, 'Found 2 materials in array');
-    $keys = (array_key_exists('material', $items[0]) && array_key_exists('library', $items[0]) && array_key_exists('pickup_date', $items[0]) && array_key_exists('pickup_id', $items[0]));
-    $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
-  }
-
-  private function test_bibdk_openuserstatus_get_ready_for_pickup_materials() {
-    $reservatiions = bibdk_openuserstatus_get_reservations($this->response);
-    $items = bibdk_openuserstatus_get_ready_for_pickup_materials($reservatiions);
-
-    $this->assertTrue(is_array($items), 'Got array in return');
-
-    $this->assertEqual(count($items), 3, 'Found 3 materials in array');
     $keys = (array_key_exists('material', $items[0]) && array_key_exists('library', $items[0]) && array_key_exists('pickup_date', $items[0]) && array_key_exists('pickup_id', $items[0]));
     $this->assertTrue($keys, 'Materials in items array seems to be correectly formatted');
   }
