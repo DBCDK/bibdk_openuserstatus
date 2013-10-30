@@ -54,7 +54,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     //Testing methods that includes webservice activity. All webservice activity has been mocked up
     /** TESTING BIBDK_OPENUSERSTATUS.MODULE **/
     $this->_setSession();
-    $this->test_bibdk_openuserstatus_get_favourites();
     $this->test_bibdk_openuserstatus_request();
     // Failing tests omitted /svi
     //$this->test_bibdk_openuserstatus_get_agencyname();
@@ -192,13 +191,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(is_array($userstatusResponse->response), 'Userstatusresponse has response array');
     $this->assertNull($userstatusResponse->error, 'Error is NULL');
     $this->assertEqual($userstatusResponse->userId, $this->userId, 'userId in UserStatusResponse matches the expected value');
-  }
-
-  private function test_bibdk_openuserstatus_get_favourites() {
-    $ret = bibdk_favourite_get_favourites();
-    $this->assertTrue(is_array($ret), 'Array was returned');
-    $this->assertEqual(count($ret), 2, 'Array count equals 2');
-    $this->assertTrue(array_key_exists($this->agencyId, $ret), 'Testlibrary with id 737600 was found in $_SESSION');
   }
 
   private function test_bibdk_openuserstatus_get_agencyname() {
