@@ -19,6 +19,7 @@ class BibdkOpenuserstatusFormUnitTest extends DrupalUnitTestCase {
   public function setUp() {
     module_load_include('inc', 'bibdk_openuserstatus', 'includes/bibdk_openuserstatus.form');
     module_load_include('php', 'bibdk_openuserstatus', 'test/AgencyMockObject');
+    module_load_include('php', 'bibdk_openuserstatus', 'test/function_mocks.form');
     parent::setUp();
   }
 
