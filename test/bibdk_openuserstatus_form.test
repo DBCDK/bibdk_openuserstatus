@@ -92,4 +92,49 @@ class BibdkOpenuserstatusFormUnitTest extends DrupalUnitTestCase {
     $this->assertTrue($dkres_result['select']['#value'] == '1234', 'Selected agency is stripped for \'DK-\'.');
     $this->assertTrue($subres_result['select']['#value'] == '1234-789', 'pickUpAgencySubdivision is appended to agencyId.');
   }
+
+  public function test_get_pickupagencies_from_material_list() {
+    $empty = array();
+    $no_agencyId = array(
+      array(
+        'author' => 'someone',
+        'title' => 'No title',
+      ),
+    );
+    $list = array(
+      array(
+        'agencyId' => '100451',
+        'author' => 'someone',
+        'title' => 'No title',
+      ),
+      array(
+        'agencyId' => '100451',
+        'author' => 'someother',
+        'title' => 'No title - the mising part',
+      ),
+      array(
+        'agencyId' => '100452',
+        'author' => 'a third author',
+        'title' => 'Blank',
+      ),
+    );
+
+    $empty_r = bibdk_openuserstatus_get_pickup_agencies_from_material_list($empty);
+    $no_agencyId_r = bibdk_openuserstatus_get_pickup_agencies_from_material_list($no_agencyId);
+    $list_r = bibdk_openuserstatus_get_pickup_agencies_from_material_list($list);
+    $this->assertTrue($empty_r == array(), 'Empty list gives no agencies.');
+    $this->assertTrue($no_agencyId_r == array(), 'No agencyId gives no agencies.');
+    $this->assertTrue(count($list_r) == 2, 'Found two agencies.');
+    $this->assertTrue(in_array('100451', $list_r) && in_array('100452', $list_r), 'The two agencies found as expected.');
+  }
+
+  public function test_get_agency_names() {
+    $empty = array();
+    $not_empty = array('100451');
+    $empty_r = bibdk_openuserstatus_agency_names($empty);
+    $not_empty_r = bibdk_openuserstatus_agency_names($not_empty);
+    $this->assertTrue($empty_r == array(), 'Empty list returns empty list.');
+    $this->assertTrue(count($not_empty) == count($not_empty_r), 'Number of elements for input and output are equal.');
+    $this->assertTrue(isset($not_empty_r['100451']) && $not_empty_r['100451']  == 'name', 'Got name for agency.');
+  }
 }
