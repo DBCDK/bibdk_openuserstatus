@@ -138,4 +138,30 @@ class BibdkOpenuserstatusFormUnitTest extends DrupalUnitTestCase {
     $this->assertTrue(count($not_empty) == count($not_empty_r), 'Number of elements for input and output are equal.');
     $this->assertTrue(isset($not_empty_r['100451']) && $not_empty_r['100451']  == 'name', 'Got name for agency.');
   }
+
+  public function test_bibdk_openuserstatus_material() {
+    $empty = array();
+    $has_author = array(
+      'author' => 'some name',
+    );
+    $has_title = array(
+      'title' => 'some title',
+    );
+    $has_both = $has_author + $has_title;
+    $r = array(
+      'data' => array(
+        '#theme' => 'bibdk_openuserstatus_row_item',
+        '#author' => '',
+        '#title' => '',
+      ),
+    );
+    $empty_r = _bibdk_openuserstatus_material($empty);
+    $has_author_r = _bibdk_openuserstatus_material($has_author);
+    $has_title_r = _bibdk_openuserstatus_material($has_title);
+    $has_both_r = _bibdk_openuserstatus_material($has_both);
+    $this->assertTrue($empty_r == $r, 'Both author and title is empty strings.');
+    $this->assertTrue($has_author_r == array('data' => array('#author' => 'some name') + $r['data']), 'Author is set correctly.');
+    $this->assertTrue($has_title_r == array('data' => array('#title' => 'some title') + $r['data']), 'Title is set correctly.');
+    $this->assertTrue($has_both_r == array('data' => array('#author' => 'some name', '#title' => 'some title') + $r['data']), 'Author and title are set correctly.');
+  }
 }
