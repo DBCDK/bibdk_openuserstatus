@@ -193,8 +193,10 @@ function bibdk_openuserstatus_get_favourites_array() {
 function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
   $favourites = bibdk_favourite_get_favourites();
   $pickupAgencies = array();
-  if ($favourites[$agencyId]->getUpdateOrderAllowed()) {
-    $pickupAgencies = $favourites[$agencyId]->getPickupAgencySelectList();
+  if (isset($favourites[$agencyId])) {
+    if ($favourites[$agencyId]->getUpdateOrderAllowed()) {
+      $pickupAgencies = $favourites[$agencyId]->getPickupAgencySelectList();
+    }
   }
   return $pickupAgencies;
 }
