@@ -183,10 +183,10 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
   $data['items'] = array();
   $reservations_in_process = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
+
   $help_icon = array(
-    '#markup' => '<p class="helptext" title="' .
-      t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')) .
-      '">?</p>',
+    '#theme' => 'bibdk_openuserstatus_help_icon',
+    '#label' => t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')),
   );
 
   if (!empty($reservations)) {

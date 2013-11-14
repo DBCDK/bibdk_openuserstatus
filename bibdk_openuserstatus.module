@@ -84,6 +84,11 @@ function bibdk_openuserstatus_theme() {
       'path' => $theme_path,
       'variables' => array('overdue' => FALSE, 'date' => ''),
     ),
+    'bibdk_openuserstatus_help_icon' => array(
+      'template'    => 'bibdk_openuserstatus_help_icon',
+      'path' => $theme_path,
+      'variables' => array('label' => NULL ),
+    ),
   );
 }
 
@@ -200,7 +205,7 @@ function bibdk_openuserstatus_get_pickup_agencies($agencyId) {
   }
   return $pickupAgencies;
 }
- 
+
 /**
  * Handles the form submission when the renew_all button is hit
  *
