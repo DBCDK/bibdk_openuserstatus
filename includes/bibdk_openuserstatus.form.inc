@@ -27,9 +27,13 @@ function bibdk_openuserstatus_get_tables($form, $response) {
   $loans = bibdk_openuserstatus_get_loans($response);
   $reservations = bibdk_openuserstatus_get_reservations($response);
   $fiscals = bibdk_openuserstatus_get_fiscals($response);
-  $form = bibdk_openuserstatus_get_loans_table($form, $loans);
-  $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
-  $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations);
+  $loan_agencies = bibdk_openuserstatus_get_pickup_agencies_from_material_list($loans);
+  $reservation_agencies = bibdk_openuserstatus_get_pickup_agencies_from_material_list($reservations);
+  $agencies = array_unique(array_merge($loan_agencies, $reservation_agencies));
+  $named_agencies = bibdk_openuserstatus_agency_names($agencies);
+  $form = bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies);
+  $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations, $named_agencies);
+  $form = bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations, $named_agencies);
   $form = bibdk_openuserstatus_get_fiscal_account_table($form, $fiscals);
   $form['#attributes'] = array('class' => array('openuserstatus'));
   $form['#attached']['js'] = array(
@@ -53,11 +57,12 @@ function bibdk_openuserstatus_get_reservations($response) {
 /**
  * Creates the necessary items and header arrays for the loans tableselect form
  *
- * @param array $form     The form array containing the entire form
- * @param array $response The OpenUserstatus response
- * @return array $form    The entire form array including the loans table
+ * @param array $form The form array containing the entire form
+ * @param array $loans List of loans
+ * @param array $named_agencies Associative list of agency names
+ * @return array
  */
-function bibdk_openuserstatus_get_loans_table($form, $loans) {
+function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
   $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
@@ -88,7 +93,7 @@ function bibdk_openuserstatus_get_loans_table($form, $loans) {
       $item = array();
       $id = $material['loanId'] . ';' . $material['agencyId'];
       $item['material'] = _bibdk_openuserstatus_material($material);
-      $item['library'] = bibdk_openuserstatus_get_agencyname($material['agencyId']);
+      $item['library'] = $named_agencies[$material['agencyId']];
       $item['returndate'] = $status_html;
       $items[$id] = $item;
     }
@@ -161,11 +166,12 @@ function bibdk_openuserstatus_check_returndate($returnDate) {
 /**
  * Creates the necessary items and header arrays for the ready_for_pickup table form
  *
- * @param array $form
- * @param array $reservations
- * @return array $form
+ * @param array $form Form structure
+ * @param array $reservations List of reservations
+ * @param array $named_agencies Associative list of agency names
+ * @return array
  */
-function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations) {
+function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservations, $named_agencies) {
   $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
@@ -205,7 +211,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
           $item['help']['data'] = $help_icon;
         }
         else {
-          $item['library'] = $pickUpAgencies[$reservation['agencyId']];
+          $item['library'] = $named_agencies[$reservation['agencyId']];
           $item['help'] = '';
         }
         $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
@@ -280,11 +286,12 @@ function bibdk_openuserstatus_select($pickUpAgencies, $reservation) {
 /**
  * Creates the necessary items and header arrays for the reservations tableselect form
  *
- * @param array $form
- * @param array $reservations
- * @return array $form
+ * @param array $form Form structure
+ * @param array $reservations List of reservations
+ * @param array $named_agencies Associative list of agency names
+ * @return array
  */
-function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations) {
+function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations, $named_agencies) {
   $data = array();
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
@@ -310,7 +317,7 @@ function bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $rese
       if ($available_pickup || $integra_pickup_bug ) {
         $item = array();
         $item['material'] = _bibdk_openuserstatus_material($reservation);
-        $item['library'] = bibdk_openuserstatus_get_agencyname($reservation['pickUpAgency']);
+        $item['library'] = $named_agencies[$reservation['agencyId']];
         $item['pickup_date'] = isset($reservation['pickUpExpiryDate']) ? date('d.m.Y', strtotime($reservation['pickUpExpiryDate'])) : '';
         $item['pickup_id'] = isset($reservation['pickUpId']) ? $reservation['pickUpId'] : '';
         $items[] = $item;
@@ -472,4 +479,40 @@ function _bibdk_openuserstatus_material($material) {
       '#title' => (isset($material['title']) ? $material['title'] : ''),
     ),
   );
+}
+
+/**
+ * Returns a list of unique agencyIds given a list of reservations.
+ *
+ * @param array $reservations
+ * @return array
+ */
+function bibdk_openuserstatus_get_pickup_agencies_from_material_list($reservations) {
+  $agencies = array();
+
+  foreach($reservations as $reservation) {
+    if (isset($reservation['agencyId'])) {
+      if (!in_array($reservation['agencyId'], $agencies)) {
+        $agencies[] = $reservation['agencyId'];
+      }
+    }
+  }
+
+  return $agencies;
+}
+
+/**
+ * Looks up names for a list of agencies.
+ *
+ * @param array $agencies
+ * @return array
+ */
+function bibdk_openuserstatus_agency_names($agencies) {
+  $named_agencies = array();
+
+  foreach ($agencies as $agency) {
+    $named_agencies[$agency] = bibdk_openuserstatus_get_agencyname($agency);
+  }
+
+  return $named_agencies;
 }
