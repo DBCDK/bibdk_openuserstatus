@@ -76,7 +76,9 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
   private function test_bibdk_openuserstatus_get_loans_table() {
     $form = array();
     $loans = bibdk_openuserstatus_get_loans($this->response);
-    $form = bibdk_openuserstatus_get_loans_table($form, $loans);
+    $agencies = array('737600');
+    $named_agencies = bibdk_openuserstatus_agency_names($agencies);
+    $form = bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies);
 
     $this->assertTrue(is_array($form['loans']), 'Array correctly returned wrapped in a \'loans\' key');
 
@@ -122,8 +124,10 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
   private function test_bibdk_openuserstatus_get_reservations_readyforpickup_table() {
     $form = array();
+    $agencies = array('737600');
+    $named_agencies = bibdk_openuserstatus_agency_names($agencies);
     $reservations = bibdk_openuserstatus_get_reservations($this->response);
-    $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations);
+    $form = bibdk_openuserstatus_get_reservations_readyforpickup_table($form, $reservations, $named_agencies);
 
     $this->assertTrue(is_array($form), 'Array correctly returned');
     $this->assertTrue(array_key_exists('readyforpickup', $form), 'Array contains readyforpickup key');
@@ -216,9 +220,11 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue(is_array($ret), 'Array was returned');
 
     $count = count($ret);
-    $this->assertEqual(count($ret), 7, t('Array length equal 7, got %count', array('%count' => $count)));
+    $this->assertEqual(count($ret), 6, t('Array length equal 6, got %count', array('%count' => $count)));
 
-    $keys = array('737600', '737601', '737602', '737603', '737604', '737605', 'Bogbussen:');
+    
+    
+    $keys = array('737600', '737601', '737602', '737603', '737604', '737605');
     $this->assertTrue($this->_keysExists($ret, $keys), 'Keys is found as expected');
   }
 
