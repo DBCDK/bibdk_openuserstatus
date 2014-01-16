@@ -35,7 +35,6 @@ function bibdk_openuserstatus_menu() {
     'description' => 'Status for user\'s loans and reservations',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('bibdk_openuserstatus_form'),
-    'file' => 'bibdk_mypage.admin.inc',
     'type' => MENU_LOCAL_TASK,
     'access callback' => TRUE,
     'access arguments'=> 'user_edit_access',
