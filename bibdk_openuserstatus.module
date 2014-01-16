@@ -45,21 +45,6 @@ function bibdk_openuserstatus_menu() {
   return $items;
 }
 
-
-/**
- * Impelements user_profile_tabs (
- * @see ding_user.module)
- * */
-function bibdk_openuserstatus_user_profile2_tabs() {
-  global $user;
-  $username = isset($user->mail) ? ' - ' . $user->mail : '';
-  $ret = new stdClass();
-  $ret->label = t('my_loanerstatus @username', array('@username' => $username), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_form';
-  $ret->type = 'bibdk_openuserstatus';
-  return $ret;
-}
-
 /**
  * Implement hook_ctools_plugin_api().
  */
