@@ -20,8 +20,9 @@ function bibdk_openuserstatus_bibdk_mypage_tabs($max_rows) {
   );
   $ret['bibdk_openuserstatus']['link'] = array(
     'title' => t('Go to userstatus'),
-    'href' => 'user/' . $user->uid . '/edit/bibdk_openuserstatus',
+    'href' => 'user/' . $user->uid . '/bibdk_openuserstatus',
   );
+  $ret['bibdk_openuserstatus']['weight'] = 10;
 
   return $ret;
 }
