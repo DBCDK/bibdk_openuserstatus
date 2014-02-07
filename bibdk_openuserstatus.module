@@ -30,22 +30,18 @@ function bibdk_openuserstatus_menu() {
     'file' => 'includes/bibdk_openuserstatus.admin.inc',
   );
 
+  $items['user/%/bibdk_openuserstatus'] = array(
+    'title' => 'Userstatus',
+    'description' => 'Status for user\'s loans and reservations',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_openuserstatus_form'),
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+    'access arguments'=> 'user_edit_access',
+    'weight' => 10,
+  );
+
   return $items;
-}
-
-
-/**
- * Impelements user_profile_tabs (
- * @see ding_user.module)
- * */
-function bibdk_openuserstatus_user_profile2_tabs() {
-  global $user;
-  $username = isset($user->mail) ? ' - ' . $user->mail : '';
-  $ret = new stdClass();
-  $ret->label = t('my_loanerstatus @username', array('@username' => $username), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_form';
-  $ret->type = 'bibdk_openuserstatus';
-  return $ret;
 }
 
 /**
