@@ -281,7 +281,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $messages = drupal_get_messages();
 
     $this->assertTrue(array_key_exists('error', $messages), 'Found arraykey error in messages array');
-    $this->assertTrue(array_key_exists('notice', $messages), 'Found arraykey notice in messages array');
 
 
     $index = 0;
@@ -290,7 +289,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     }
 
     $this->assertTrue((strstr($messages['error'][$index], 'Adler-Olsen, Jussi: Alfabethuset. - 6. udgave') && strstr($messages['error'][$index], 'items are not renewable')), 'Adler-Olsen, Jussi: Alfabethuset found as not renewable');
-    $this->assertTrue((strstr($messages['notice'][0], 'Jacobsen, Steffen, f. 1956') && strstr($messages['notice'][0], 'materials was sucessfully renewed')), 'Jacobsen, Steffen, f. 1956: Passageren found as renewed');
   }
 
 

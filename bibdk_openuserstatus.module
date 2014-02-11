@@ -314,7 +314,7 @@ function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succe
     }
   }
   if (count($succes) >= 1) {
-    drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'notice');
+    drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'status');
   }
 }
 
@@ -377,7 +377,7 @@ function bibdk_openuserstatus_cancel_reservations($cancellations) {
         drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus:error')), 'error');
       }
       else {
-        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'notice');
+        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'status');
       }
     }
   }
