@@ -251,7 +251,11 @@ function bibdk_openuserstatus_renew_loans($loans) {
   $favourites = bibdk_favourite_get_favourites();
   foreach ($loans as $agencyId => $loanIds) {
     if (array_key_exists($agencyId, $favourites)) {
-      $response = $favourites[$agencyId]->renewLoan($loanIds);
+      /**
+       * @var $favoriteAgenvy FavouriteAgency
+       */
+      $favoriteAgenvy = $favourites[$agencyId];
+      $response = $favoriteAgenvy->renewLoan($loanIds);
       bibdk_openuserstatus_parse_response($response);
     }
   }
