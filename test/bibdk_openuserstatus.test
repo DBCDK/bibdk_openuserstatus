@@ -25,7 +25,10 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     //Note that openuserstatus_webservice_mockup should be enabled in local installation when testing locally
     module_enable(array('openuserstatus_webservice_mockup'));
     menu_rebuild();
-    parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup', 'ting_openuserstatus', 'ting_client', 'ding_user', 'bibdk_provider');
+    parent::setUp('bibdk_openuserstatus', 'ting_agency', 'openuserstatus_webservice_mockup', 'ting_openuserstatus', 'ding_provider', 'bibdk_provider', 'bibdk_webservice');
+    variable_set('bibdk_provider_webservice_url', $this->getAbsoluteUrl('bibdk_webservice'));
+    variable_set('bibdk_provider_security_code', 'securityCode');
+
 
     global $base_url;
     $this->baseurl = $base_url;
@@ -33,7 +36,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     variable_set('agency_search_url', 'http://openagency.addi.dk/2.2/');
   }
 
-  public function tearDown(){
+  public function tearDown() {
     module_disable(array('openuserstatus_webservice_mockup'));
     parent::tearDown();
   }
@@ -47,22 +50,63 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->test_bibdk_openuserstatus_get_reservations();
     $this->test_bibdk_openuserstatus_get_reservations_readyforpickup_table();
 
-    // Failing tests omitted /svi
-    //$this->test_bibdk_openuserstatus_get_fiscals();
-    //$this->test_bibdk_openuserstatus_get_fiscal_materials();
-
     //Testing methods that includes webservice activity. All webservice activity has been mocked up
     /** TESTING BIBDK_OPENUSERSTATUS.MODULE **/
     $this->_setSession();
     $this->test_bibdk_openuserstatus_request();
-    // Failing tests omitted /svi
-    //$this->test_bibdk_openuserstatus_get_agencyname();
     $this->test_bibdk_openuserstatus_get_favourites_array();
     $this->test_bibdk_openuserstatus_get_pickup_agencies();
     $this->test_bibdk_openuserstatus_renew_marked_submit();
-    //$this->test_bibdk_openuserstatus_fiscal_form();
+
+    $this->testUserMenu();
   }
 
+
+  private function testUserMenu() {
+
+    $this->_createProviderUser();
+    // we have to submit the user_login_block form to log in as provider user
+    $edit['name'] = 'dummy@dbc.dk';
+    $edit['pass'] = 'secretPassword';
+    $this->drupalPost('user', $edit, 'Log in', array(), array(), 'user-login', NULL);
+
+    //Assert that search history is present
+    $this->drupalGet('user');
+    $this->assertLink('Userstatus');
+    $this->clickLink('Userstatus');
+    $this->assertUrl('user/2/bibdk_openuserstatus');
+    //clean up
+    $this->_removeProviderUser();
+
+  }
+
+  private function _createProviderUser() {
+    $name = 'dummy@dbc.dk';
+    $pass = 'pass';
+    bibdk_provider_user_create_account($name, $pass);
+    db_insert('authmap')->fields(array(
+      'uid' => 2,
+      'module' => 'ding_user',
+      'authname' => $name
+    ))->execute();
+
+    $user = new stdClass();
+    $user->uid = 2;
+    $user->name = $name;
+    $user->roles = array();
+    ding_user_save_creds(array(
+      'creds' => array(
+        'name' => $name,
+        'pass' => $pass,
+      )
+    ), $user);
+    return $user;
+  }
+
+  private function _removeProviderUser() {
+    $name = 'dummy@dbc.dk';
+    db_delete('authmap')->condition('authname', $name)->execute();
+  }
 
   /** TESTING BIBDK_OPENUSERSTATUS.AJAX.INC **/
 
@@ -153,9 +197,9 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
 
     $items = bibdk_openuserstatus_get_fiscal_materials($fiscals);
     debug($items);
-    $this->assertTrue( is_array($items), 'Got array in return');
+    $this->assertTrue(is_array($items), 'Got array in return');
 
-    $keys = ( array_key_exists('737600', $items));
+    $keys = (array_key_exists('737600', $items));
     $this->assertTrue($keys, 'Array has branchId as key.');
 
     $this->assertEqual(count($items['737600']['items']), 2, 'Found 2 materials in array');
@@ -226,7 +270,7 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertTrue($this->_keysExists($ret, $keys), 'Keys is found as expected');
   }
 
-  private function test_bibdk_openuserstatus_renew_marked_submit(){
+  private function test_bibdk_openuserstatus_renew_marked_submit() {
     $messages = drupal_get_messages();
 
     $form_state = drupal_json_decode($this->_loadFile('form_submit_renew_marked.json'));
@@ -237,16 +281,14 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $messages = drupal_get_messages();
 
     $this->assertTrue(array_key_exists('error', $messages), 'Found arraykey error in messages array');
-    $this->assertTrue(array_key_exists('notice', $messages), 'Found arraykey notice in messages array');
 
 
     $index = 0;
-    if(strstr($messages['error'][0], 'security updates available for one or more of your modules or themes')){
+    if (strstr($messages['error'][0], 'security updates available for one or more of your modules or themes')) {
       $index = 1;
     }
 
     $this->assertTrue((strstr($messages['error'][$index], 'Adler-Olsen, Jussi: Alfabethuset. - 6. udgave') && strstr($messages['error'][$index], 'items are not renewable')), 'Adler-Olsen, Jussi: Alfabethuset found as not renewable');
-    $this->assertTrue((strstr($messages['notice'][0], 'Jacobsen, Steffen, f. 1956') && strstr($messages['notice'][0], 'materials was sucessfully renewed')), 'Jacobsen, Steffen, f. 1956: Passageren found as renewed');
   }
 
 
@@ -262,9 +304,6 @@ class BibdkOpenuserstatusTest extends DrupalWebTestCase {
     $this->assertEqual($form, $form_expected, 'fiscal form formatted correctly');
 
   }
-
-
-
 
 
   /**

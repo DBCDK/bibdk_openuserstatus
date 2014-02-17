@@ -43,8 +43,8 @@ class BibdkOpenuserstatusCancelReservationTest extends DrupalWebTestCase {
     bibdk_openuserstatus_cancel_selected_submit(array(), $form_state);
 
     $messages = drupal_get_messages();
-    $this->assertTrue(array_key_exists('notice', $messages), 'Found arraykey notice in messages array');
-    $this->assertTrue((strstr($messages['notice'][0], 'Your order(s) was successfully canceled')), 'Found text: "Your order(s) was successfully canceled"');
+    $this->assertTrue(array_key_exists('status', $messages), 'Found arraykey notice in messages array');
+    $this->assertTrue((strstr($messages['status'][0], 'Your order(s) was successfully canceled')), 'Found text: "Your order(s) was successfully canceled"');
   }
 
   /**

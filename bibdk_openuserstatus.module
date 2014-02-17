@@ -30,22 +30,18 @@ function bibdk_openuserstatus_menu() {
     'file' => 'includes/bibdk_openuserstatus.admin.inc',
   );
 
+  $items['user/%/bibdk_openuserstatus'] = array(
+    'title' => 'Userstatus',
+    'description' => 'Status for user\'s loans and reservations',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('bibdk_openuserstatus_form'),
+    'type' => MENU_LOCAL_TASK,
+    'access callback' => TRUE,
+    'access arguments'=> 'user_edit_access',
+    'weight' => 10,
+  );
+
   return $items;
-}
-
-
-/**
- * Impelements user_profile_tabs (
- * @see ding_user.module)
- * */
-function bibdk_openuserstatus_user_profile2_tabs() {
-  global $user;
-  $username = isset($user->mail) ? ' - ' . $user->mail : '';
-  $ret = new stdClass();
-  $ret->label = t('my_loanerstatus @username', array('@username' => $username), array('context' => 'bibdk_openuserstatus'));
-  $ret->form = 'bibdk_openuserstatus_form';
-  $ret->type = 'bibdk_openuserstatus';
-  return $ret;
 }
 
 /**
@@ -255,7 +251,11 @@ function bibdk_openuserstatus_renew_loans($loans) {
   $favourites = bibdk_favourite_get_favourites();
   foreach ($loans as $agencyId => $loanIds) {
     if (array_key_exists($agencyId, $favourites)) {
-      $response = $favourites[$agencyId]->renewLoan($loanIds);
+      /**
+       * @var $favoriteAgenvy FavouriteAgency
+       */
+      $favoriteAgenvy = $favourites[$agencyId];
+      $response = $favoriteAgenvy->renewLoan($loanIds);
       bibdk_openuserstatus_parse_response($response);
     }
   }
@@ -318,7 +318,7 @@ function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succe
     }
   }
   if (count($succes) >= 1) {
-    drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'notice');
+    drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'status');
   }
 }
 
@@ -381,7 +381,7 @@ function bibdk_openuserstatus_cancel_reservations($cancellations) {
         drupal_set_message(t('An error occured and your request could not be completed. Please try again later.', array(), array('context' => 'bibdk_openuserstatus:error')), 'error');
       }
       else {
-        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'notice');
+        drupal_set_message(t('Your order(s) was successfully canceled', array(), array('context' => 'bibdk_openuserstatus')), 'status');
       }
     }
   }
