@@ -316,6 +316,9 @@ function bibdk_openuserstatus_renew_request_complete_set_messages($error, $succe
     if ($reason == 'Item not renewable') {
       drupal_set_message(t('The following items are not renewable: %materials', array('%materials' => implode(', ', $err)), array('context' => 'bibdk_openuserstatus:error')), 'error');
     }
+    else{
+      drupal_set_message(t($reason . ' : %materials', array('%materials' => implode(', ', $err)), array('context' => 'bibdk_openuserstatus:error')), 'error');
+    }
   }
   if (count($succes) >= 1) {
     drupal_set_message(t('The following materials was sucessfully renewed: %materials', array('%materials' => implode(', ', $succes)), array('context' => 'bibdk_openuserstatus')), 'status');
