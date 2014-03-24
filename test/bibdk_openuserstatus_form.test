@@ -60,15 +60,16 @@ class BibdkOpenuserstatusFormUnitTest extends DrupalUnitTestCase {
   }
 
   public function test_bibdk_openuserstatus_check_returndate() {
-    $past_date = '01.01.1979';
-    $future_date = '01.01.2099';
-    $invalid_date = '32.13.2000';
+    $past_date = '01-01-1979';
+    $future_date = '02-02-2037';
+    $invalid_date = '32-13-2000';
     $now = date('d.m.Y');
 
     $past = bibdk_openuserstatus_check_returndate($past_date);
     $future = bibdk_openuserstatus_check_returndate($future_date);
     $invalid = bibdk_openuserstatus_check_returndate($invalid_date);
     $today = bibdk_openuserstatus_check_returndate($now);
+
 
     $this->assertTrue($invalid == '', 'Invalid date returns empty string.');
     $this->assertTrue(is_array($past), 'Past date returns render array');
