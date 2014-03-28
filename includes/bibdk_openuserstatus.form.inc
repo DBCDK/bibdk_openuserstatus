@@ -212,7 +212,7 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         }
         else {
           $item['library'] = $named_agencies[$reservation['agencyId']];
-          $item['help'] = '';
+          $item['help']['data'] = $help_icon;
         }
         $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
         $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
