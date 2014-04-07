@@ -184,11 +184,16 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
   $data['items'] = array();
   $reservations_in_process = t('Reservations_in_process', array(), array('context' => 'bibdk_userstatus'));
 
-  $help_icon = array(
+  $help_icon_change_library = array(
     '#theme' => 'bibdk_openuserstatus_help_icon',
     '#label' => t('bibdk_openuserstatus_change_library', array(), array('context' => 'bibdk_userstatus')),
   );
-
+  
+  $help_icon_no_change_library = array(
+    '#theme' => 'bibdk_openuserstatus_help_icon',
+    '#label' => t('bibdk_openuserstatus_no_change_library', array(), array('context' => 'bibdk_userstatus')),
+  );
+  
   if (!empty($reservations)) {
     $items = array();
     $in_process_states = array('In process', 'Requested via ill', 'Requested');
@@ -208,11 +213,11 @@ function bibdk_openuserstatus_get_reservations_inprocess_table($form, $reservati
         $item['material'] = _bibdk_openuserstatus_material($reservation);
         if (count($pickUpAgencies) > 1) {
           $item['library']['data'] = bibdk_openuserstatus_select($pickUpAgencies, $reservation);
-          $item['help']['data'] = $help_icon;
+          $item['help']['data'] = $help_icon_change_library;
         }
         else {
           $item['library'] = $named_agencies[$reservation['agencyId']];
-          $item['help'] = '';
+          $item['help']['data'] = $help_icon_no_change_library;
         }
         $item['reservation_date'] = date('d.m.Y', strtotime($reservation['orderDate']));
         $item['queue_position'] = (isset($reservation['holdQueuePosition']) ? $reservation['holdQueuePosition'] : '');
