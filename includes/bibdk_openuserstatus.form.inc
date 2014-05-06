@@ -115,7 +115,6 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
 
       $items[$id] = $item;
 
-dpm($item);
     }
 
     $data['items'] = $items;
