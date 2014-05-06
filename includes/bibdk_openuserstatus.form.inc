@@ -98,19 +98,24 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
     $items = array();
 
     foreach ($loans as $material) {
-      $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+
       $item = array();
       $id = $material['loanId'] . ';' . $material['agencyId'];
+
+      $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+
+      if ( !bibdk_openuserstatus_check_renewable($material, $favourites) ) {
+        $disabled[$id] = true;
+        $status_html['data']['#renewable'] = t('renewable_false_msg', array(), array('context' => 'bibdk_openuserstatus'));
+      }
+
       $item['material'] = _bibdk_openuserstatus_material($material);
       $item['library'] = $named_agencies[$material['agencyId']];
       $item['returndate'] = $status_html;
 
       $items[$id] = $item;
 
-      if ( !bibdk_openuserstatus_check_renewable($material, $favourites) ) {
-        $disabled[$id] = true;
-      }
-
+dpm($item);
     }
 
     $data['items'] = $items;

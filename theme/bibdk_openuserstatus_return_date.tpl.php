@@ -8,5 +8,14 @@ else {
   $alert_class = 'no-alert';
   $title_attr = '';
 }
+dpm($variables);
 ?>
-<p><span class="alert <?php print $alert_class;?>" <?php print $title_attr;?>></span><span><?php print $date;?></span></p>
+<p>
+  <span class="alert <?php print $alert_class;?>" <?php print $title_attr;?>></span>
+  <span><?php print $date;?></span>
+</p>
+<?php
+if ( $renewable ) {
+  print '<p>' . $renewable . '</p>';
+}
+?>
