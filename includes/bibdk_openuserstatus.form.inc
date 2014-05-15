@@ -63,21 +63,30 @@ function bibdk_openuserstatus_get_reservations($response) {
  * @return array
  */
 function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
-  $data = array();
+
+  $data = $disabled = array();
+  
+  $favourites = bibdk_favourite_get_favourites();
+
   $data['header'] = array(
     'material' => t('author_title', array(), array('context' => 'bibdk_openuserstatus')),
     'library' => t('library_header', array(), array('context' => 'bibdk_openuserstatus')),
     'returndate' => t('returndate_header', array(), array('context' => 'bibdk_openuserstatus')),
   );
+
   $data['msg'] = t('no_loans_found', array(), array('context' => 'bibdk_openuserstatus'));
+
   $loans_text = t('Loans', array(), array('context' => 'bibdk_userstatus'));
+
   $data['items'] = array();
+
   $renew_marked = array(
     '#type' => 'submit',
     '#value' => t('renew_marked', array(), array('context' => 'bibdk_openuserstatus')),
     '#submit' => array('bibdk_openuserstatus_renew_marked_submit'),
     '#weight' => 1,
   );
+
   $renew_all = array(
     '#type' => 'submit',
     '#value' => t('renew_all', array(), array('context' => 'bibdk_openuserstatus')),
@@ -89,13 +98,23 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
     $items = array();
 
     foreach ($loans as $material) {
-      $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+
       $item = array();
       $id = $material['loanId'] . ';' . $material['agencyId'];
+
+      $status_html = bibdk_openuserstatus_check_returndate($material['dateDue']);
+
+      if ( !bibdk_openuserstatus_check_renewable($material, $favourites) ) {
+        $disabled[$id] = true;
+        $status_html['data']['#renewable'] = t('renewable_false_msg', array(), array('context' => 'bibdk_openuserstatus'));
+      }
+
       $item['material'] = _bibdk_openuserstatus_material($material);
       $item['library'] = $named_agencies[$material['agencyId']];
       $item['returndate'] = $status_html;
+
       $items[$id] = $item;
+
     }
 
     $data['items'] = $items;
@@ -108,6 +127,7 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
     '#table_title' => $loans_text,
     '#count' => count($data['items']),
   );
+
   $form['loans']['loans_table'] = array(
     '#type' => 'tableselect',
     '#header' => $data['header'],
@@ -120,6 +140,13 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
       'class' => array('loans'),
     ),
   );
+
+  //disable checkboxes
+  foreach( $disabled as $id => $disable ) {
+    if ( $disable ) {
+      $form['loans']['loans_table'][$id]['#disabled'] = true;
+    }
+  }
 
   return $form;
 }
@@ -134,6 +161,30 @@ function bibdk_openuserstatus_get_loans_table($form, $loans, $named_agencies) {
 function bibdk_openuserstatus_get_loans($response) {
   return bibdk_openuserstatus_get_group_elements($response, 'loanedItems', 'loan');
 }
+
+
+/**
+ * Check if library allows renewal
+ *
+ * @param array $material
+ * @return boolean
+ */
+function bibdk_openuserstatus_check_renewable($material, $favourites) {
+
+  $agencyId = isset($material['agencyId']) ? $material['agencyId'] : FALSE;
+
+  if ( !$agencyId ) {
+    return FALSE;
+  }
+
+  if ( $favourites[$agencyId]->getRenewOrderAllowed() ) {
+    return TRUE;
+  }
+
+  return FALSE;
+
+}
+
 
 /**
  * Check if return date is valid (of format dd.mm.yyyy) and
