@@ -177,6 +177,10 @@ function bibdk_openuserstatus_check_renewable($material, $favourites) {
     return FALSE;
   }
 
+if(!isset($favourites[$agencyId])){
+return FALSE;
+}
+
   if ( $favourites[$agencyId]->getRenewOrderAllowed() ) {
     return TRUE;
   }
