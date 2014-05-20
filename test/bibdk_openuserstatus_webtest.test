@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class BibdkOpenuserstatusTest
+ * Class BibdkOpenuserstatusWebTest
  */
-class BibdkOpenuserstatusTest extends DrupalWebTestCase {
+class BibdkOpenuserstatusWebTest extends DrupalWebTestCase {
 
   /**
    * @return array
