@@ -45,6 +45,13 @@ function bibdk_openuserstatus_menu() {
 }
 
 /**
+ * Implements hook to user_help_list
+ * */
+function bibdk_openuserstatus_user_help_list() {
+  return array('openuserstatus_mypage_help_key'=>'openuserstatus_mypage_help_label');
+}
+
+/**
  * Implement hook_ctools_plugin_api().
  */
 function bibdk_openuserstatus_ctools_plugin_api($module, $api) {
